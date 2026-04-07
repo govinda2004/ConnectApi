@@ -76,6 +76,24 @@ CREATE TABLE IF NOT EXISTS posts (
   INDEX idx_created_at (created_at)
 );
 
+CREATE TABLE IF NOT EXISTS post_likes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  post_id INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_like (user_id, post_id),
+  INDEX idx_post_id (post_id)
+);
+
+CREATE TABLE IF NOT EXISTS post_comments (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  post_id INT NOT NULL,
+  comment TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_post_id (post_id)
+);
+
 CREATE TABLE IF NOT EXISTS connections (
   id INT AUTO_INCREMENT PRIMARY KEY,
   sender_id INT NOT NULL,
