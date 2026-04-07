@@ -12,4 +12,4 @@ RUN mkdir -p /app/uploads && chmod 777 /app/uploads
 
 EXPOSE 8080
 
-CMD php -S 0.0.0.0:${PORT:-8080} -t /app
+CMD php -S 0.0.0.0:${PORT:-8080} -t /app /app/router.php
