@@ -1,0 +1,20 @@
+# Render Blueprint - ConnectIn PHP API
+services:
+  - type: web
+    name: connectin-api
+    runtime: php
+    buildCommand: echo "No build needed"
+    startCommand: php -S 0.0.0.0:$PORT -t .
+    envVars:
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_NAME
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASS
+        sync: false
+      - key: DB_SSL_CA
+        value: "/etc/ssl/certs/ca-certificates.crt"

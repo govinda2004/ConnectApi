@@ -1,0 +1,36 @@
+============================================
+  ConnectIn - Railway MySQL Database Config
+============================================
+
+Host:     junction.proxy.rlwy.net
+Port:     19383
+Database: connectin
+User:     root
+Password: connectin2024
+
+Internal Host (Railway services): mysql.railway.internal:3306
+
+============================================
+  API URL
+============================================
+
+https://php-api-production-8b31.up.railway.app/index.php?route=
+
+============================================
+  Tables
+============================================
+
+1. users
+2. auth_tokens
+3. profiles
+4. work_experience
+5. education
+6. posts
+7. connections
+8. messages
+
+============================================
+  MySQL CLI Connect Command
+============================================
+
+mysql -h junction.proxy.rlwy.net -P 19383 -u root -pconnectin2024 connectin
