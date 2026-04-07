@@ -2,7 +2,7 @@
 /**
  * POST /add_post
  * Auth: Bearer token required
- * Body: content, image (optional file upload or URL)
+ * Body: content, image (optional file upload)
  */
 
 require_once __DIR__ . '/../config/database.php';
@@ -24,15 +24,16 @@ $imageUrl = null;
 
 // Handle file upload
 if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-    $allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (!in_array($_FILES['image']['type'], $allowed)) {
-        jsonError('Only JPEG, PNG, GIF, WEBP images allowed');
+    $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+    $allowedExt = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif'];
+
+    if (!in_array($ext, $allowedExt)) {
+        jsonError('Only JPG, PNG, GIF, WEBP images allowed');
     }
-    if ($_FILES['image']['size'] > 5 * 1024 * 1024) {
-        jsonError('Image must be under 5MB');
+    if ($_FILES['image']['size'] > 10 * 1024 * 1024) {
+        jsonError('Image must be under 10MB');
     }
 
-    $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
     $filename = 'post_' . $userId . '_' . time() . '.' . $ext;
     $destDir = __DIR__ . '/../uploads/posts/';
     if (!is_dir($destDir)) mkdir($destDir, 0777, true);
@@ -42,7 +43,6 @@ if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
         $imageUrl = '/uploads/posts/' . $filename;
     }
 } elseif (!empty($_POST['image_url'])) {
-    // Accept image URL directly
     $imageUrl = trim($_POST['image_url']);
 }
 

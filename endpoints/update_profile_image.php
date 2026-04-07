@@ -21,15 +21,16 @@ if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
 }
 
 $file = $_FILES['image'];
-$allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+$ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+$allowedExt = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif'];
 
-if (!in_array($file['type'], $allowed)) {
+if (!in_array($ext, $allowedExt)) {
     jsonError('Invalid image type. Allowed: jpg, png, webp, gif');
 }
 
-// Max 5MB
-if ($file['size'] > 5 * 1024 * 1024) {
-    jsonError('Image must be less than 5MB');
+// Max 10MB
+if ($file['size'] > 10 * 1024 * 1024) {
+    jsonError('Image must be less than 10MB');
 }
 
 $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
