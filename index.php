@@ -63,6 +63,9 @@ $endpoints = [
     // Search & Stats
     'search'                 => 'endpoints/search.php',
     'get_user_stats'         => 'endpoints/get_user_stats.php',
+
+    // Setup (run once)
+    'setup_db'               => 'endpoints/setup_db.php',
 ];
 
 if (!isset($endpoints[$route])) {
