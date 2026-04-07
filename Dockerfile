@@ -3,8 +3,9 @@ FROM php:8.2-cli
 # Install MySQL PDO extension
 RUN docker-php-ext-install pdo pdo_mysql
 
-# Copy app files
+# Copy app files - ARG breaks cache on every build
 WORKDIR /app
+ARG CACHEBUST=1
 COPY . /app/
 
 # Set permissions for uploads directory
