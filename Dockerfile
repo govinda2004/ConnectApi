@@ -1,13 +1,15 @@
-FROM php:8.2-cli AS base
+FROM php:8.2-cli
 
 # Install MySQL PDO extension
 RUN docker-php-ext-install pdo pdo_mysql
 
-FROM base AS app
 WORKDIR /app
 
-# Force fresh copy every build - never cache this layer
-ADD . /app/
+# This RUN changes every commit - forces cache invalidation for COPY
+RUN echo "build-20260407-v2"
+
+# Copy app files (will NOT be cached because previous RUN changed)
+COPY . /app/
 
 # Set permissions for uploads directory
 RUN mkdir -p /app/uploads && chmod 777 /app/uploads
