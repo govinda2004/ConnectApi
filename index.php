@@ -19,10 +19,11 @@ require_once __DIR__ . '/helpers/response.php';
 // Support both ?route=xxx and /xxx path-based routing
 $route = $_GET['route'] ?? '';
 if (empty($route)) {
-    $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-    $route = ltrim($uri, '/');
-    // Remove query string artifacts
-    $route = strtok($route, '?');
+    // Try ORIGINAL_URI (set by router.php), then REQUEST_URI, then PATH_INFO
+    $uri = $_SERVER['ORIGINAL_URI']
+        ?? parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH)
+        ?? '';
+    $route = trim($uri, '/');
 }
 
 $endpoints = [
