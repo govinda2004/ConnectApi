@@ -43,6 +43,8 @@ $endpoints = [
 
     // Posts
     'add_post'               => 'endpoints/add_post.php',
+    'edit_post'              => 'endpoints/edit_post.php',
+    'delete_post'            => 'endpoints/delete_post.php',
     'post_list'              => 'endpoints/post_list.php',
 
     // Connections
