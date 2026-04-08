@@ -26,11 +26,11 @@ $stmt = $db->prepare('SELECT COUNT(*) FROM saved_jobs WHERE job_id = ?');
 $stmt->execute([$jobId]);
 $saveCount = (int)$stmt->fetchColumn();
 
-// Top applicants
+// Applicants list (used for analytics + export)
 $stmt = $db->prepare('SELECT ja.*, u.name, pr.profile_image, pr.headline
     FROM job_applications ja JOIN users u ON ja.user_id = u.id
     LEFT JOIN profiles pr ON ja.user_id = pr.user_id
-    WHERE ja.job_id = ? ORDER BY ja.created_at ASC LIMIT 10');
+    WHERE ja.job_id = ? ORDER BY ja.created_at DESC');
 $stmt->execute([$jobId]);
 $applicants = $stmt->fetchAll();
 
