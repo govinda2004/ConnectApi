@@ -40,6 +40,7 @@ $endpoints = [
     'update_profile_details' => 'endpoints/update_profile_details.php',
     'update_profile_image'   => 'endpoints/update_profile_image.php',
     'update_profile_banner'  => 'endpoints/update_profile_banner.php',
+    'remove_profile_image'   => 'endpoints/remove_profile_image.php',
 
     // Stories
     'add_story'              => 'endpoints/add_story.php',
