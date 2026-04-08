@@ -37,11 +37,17 @@ $stmt = $db->prepare('SELECT * FROM messages WHERE id = ?');
 $stmt->execute([$msgId]);
 $msg = $stmt->fetch();
 
+// Notify receiver about new message
+require_once __DIR__ . '/../helpers/notifications.php';
+$senderName = $sender['name'] ?? '';
+$snippet = mb_substr($message, 0, 40);
+createNotification($db, $receiverId, 'message', $userId, $msgId, "$senderName sent you a message: \"$snippet\"");
+
 jsonSuccess([
     'id'            => $msgId,
     'sender_id'     => $userId,
     'receiver_id'   => $receiverId,
-    'sender_name'   => $sender['name'] ?? '',
+    'sender_name'   => $senderName,
     'message'       => $message,
     'created_at'    => $msg['created_at'],
     'is_read'       => false,

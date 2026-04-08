@@ -117,7 +117,7 @@ CREATE TABLE IF NOT EXISTS story_views (
 CREATE TABLE IF NOT EXISTS notifications (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
-  type ENUM('like','comment','connection_request','connection_accepted','post_share','follow','mention') NOT NULL,
+  type VARCHAR(50) NOT NULL,
   actor_id INT NOT NULL,
   target_id INT NULL,
   message TEXT NOT NULL,

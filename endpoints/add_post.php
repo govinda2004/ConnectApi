@@ -58,4 +58,22 @@ $stmt->execute([$postId]);
 $post = $stmt->fetch();
 $post['media_type'] = $mediaType;
 
+// Notify all connections about new post
+require_once __DIR__ . '/../helpers/notifications.php';
+$stmt = $db->prepare('SELECT name FROM users WHERE id = ?');
+$stmt->execute([$userId]);
+$posterName = $stmt->fetchColumn();
+
+$stmt = $db->prepare('
+    SELECT CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END AS friend_id
+    FROM connections WHERE status = "accepted" AND (sender_id = ? OR receiver_id = ?)
+');
+$stmt->execute([$userId, $userId, $userId]);
+$friends = $stmt->fetchAll();
+
+$snippet = mb_substr($content, 0, 50);
+foreach ($friends as $f) {
+    createNotification($db, (int)$f['friend_id'], 'post_share', $userId, $postId, "$posterName shared a post: \"$snippet\"");
+}
+
 jsonSuccess($post, 'Post created successfully');

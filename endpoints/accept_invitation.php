@@ -33,4 +33,11 @@ if (!$conn) {
 $db->prepare('UPDATE connections SET status = ? WHERE id = ?')
    ->execute(['accepted', $connectionId]);
 
+// Notify the sender that their request was accepted
+require_once __DIR__ . '/../helpers/notifications.php';
+$stmt = $db->prepare('SELECT name FROM users WHERE id = ?');
+$stmt->execute([$userId]);
+$acceptorName = $stmt->fetchColumn();
+createNotification($db, (int)$conn['sender_id'], 'connection_accepted', $userId, $connectionId, "$acceptorName accepted your connection request");
+
 jsonSuccess(null, 'Connection accepted');
