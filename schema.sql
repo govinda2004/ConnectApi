@@ -94,6 +94,26 @@ CREATE TABLE IF NOT EXISTS post_comments (
   INDEX idx_post_id (post_id)
 );
 
+CREATE TABLE IF NOT EXISTS stories (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  text_content TEXT NULL,
+  image_url VARCHAR(500) NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  expires_at TIMESTAMP NOT NULL,
+  INDEX idx_user_id (user_id),
+  INDEX idx_expires (expires_at)
+);
+
+CREATE TABLE IF NOT EXISTS story_views (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  story_id INT NOT NULL,
+  user_id INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_view (story_id, user_id),
+  INDEX idx_story (story_id)
+);
+
 CREATE TABLE IF NOT EXISTS connections (
   id INT AUTO_INCREMENT PRIMARY KEY,
   sender_id INT NOT NULL,

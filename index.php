@@ -41,6 +41,13 @@ $endpoints = [
     'update_profile_image'   => 'endpoints/update_profile_image.php',
     'update_profile_banner'  => 'endpoints/update_profile_banner.php',
 
+    // Stories
+    'add_story'              => 'endpoints/add_story.php',
+    'get_stories'            => 'endpoints/get_stories.php',
+    'view_story'             => 'endpoints/view_story.php',
+    'get_story_views'        => 'endpoints/get_story_views.php',
+    'delete_story'           => 'endpoints/delete_story.php',
+
     // Posts
     'add_post'               => 'endpoints/add_post.php',
     'edit_post'              => 'endpoints/edit_post.php',
