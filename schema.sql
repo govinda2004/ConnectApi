@@ -130,8 +130,12 @@ CREATE TABLE IF NOT EXISTS messages (
   sender_id INT NOT NULL,
   receiver_id INT NOT NULL,
   message TEXT NOT NULL,
+  media_url VARCHAR(500) NULL,
+  read_at TIMESTAMP NULL,
+  is_deleted TINYINT(1) DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_sender (sender_id),
   INDEX idx_receiver (receiver_id),
-  INDEX idx_created_at (created_at)
+  INDEX idx_created_at (created_at),
+  INDEX idx_conversation (sender_id, receiver_id, created_at)
 );

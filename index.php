@@ -63,7 +63,11 @@ $endpoints = [
 
     // Messages
     'send_message'           => 'endpoints/send_message.php',
+    'get_messages'           => 'endpoints/get_messages.php',
     'get_chat_list'          => 'endpoints/get_chat_list.php',
+    'mark_as_read'           => 'endpoints/mark_as_read.php',
+    'unread_count'           => 'endpoints/unread_count.php',
+    'delete_message'         => 'endpoints/delete_message.php',
 
     // Likes & Comments
     'like_post'              => 'endpoints/like_post.php',
