@@ -78,6 +78,15 @@ $endpoints = [
     'get_notifications'      => 'endpoints/get_notifications.php',
     'mark_notifications_read' => 'endpoints/mark_notifications_read.php',
 
+    // Jobs
+    'post_job'               => 'endpoints/post_job.php',
+    'get_jobs'               => 'endpoints/get_jobs.php',
+    'get_job_detail'         => 'endpoints/get_job_detail.php',
+    'apply_job'              => 'endpoints/apply_job.php',
+    'save_job'               => 'endpoints/save_job.php',
+    'get_saved_jobs'         => 'endpoints/get_saved_jobs.php',
+    'get_job_insights'       => 'endpoints/get_job_insights.php',
+
     // Search & Stats
     'search'                 => 'endpoints/search.php',
     'get_user_stats'         => 'endpoints/get_user_stats.php',

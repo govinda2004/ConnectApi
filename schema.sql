@@ -127,6 +127,48 @@ CREATE TABLE IF NOT EXISTS notifications (
   INDEX idx_created (created_at)
 );
 
+CREATE TABLE IF NOT EXISTS jobs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  company VARCHAR(255) NOT NULL,
+  location VARCHAR(255) NULL,
+  job_type VARCHAR(50) DEFAULT 'Full-time',
+  salary_min INT NULL,
+  salary_max INT NULL,
+  description TEXT NULL,
+  skills TEXT NULL,
+  is_remote TINYINT(1) DEFAULT 0,
+  is_easy_apply TINYINT(1) DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_user (user_id),
+  INDEX idx_created (created_at)
+);
+
+CREATE TABLE IF NOT EXISTS job_applications (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  job_id INT NOT NULL,
+  user_id INT NOT NULL,
+  full_name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  phone VARCHAR(50) NULL,
+  cover_letter TEXT NULL,
+  resume_url VARCHAR(500) NULL,
+  salary_expectation VARCHAR(100) NULL,
+  status ENUM('pending','reviewed','shortlisted','rejected') DEFAULT 'pending',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_app (job_id, user_id),
+  INDEX idx_job (job_id)
+);
+
+CREATE TABLE IF NOT EXISTS saved_jobs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  job_id INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_save (user_id, job_id)
+);
+
 CREATE TABLE IF NOT EXISTS connections (
   id INT AUTO_INCREMENT PRIMARY KEY,
   sender_id INT NOT NULL,
