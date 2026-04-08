@@ -86,6 +86,7 @@ $endpoints = [
     'save_job'               => 'endpoints/save_job.php',
     'get_saved_jobs'         => 'endpoints/get_saved_jobs.php',
     'get_job_insights'       => 'endpoints/get_job_insights.php',
+    'delete_job'             => 'endpoints/delete_job.php',
 
     // Search & Stats
     'search'                 => 'endpoints/search.php',
