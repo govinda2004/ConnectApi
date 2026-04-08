@@ -54,4 +54,11 @@ if ($existing) {
 $stmt = $db->prepare('INSERT INTO connections (sender_id, receiver_id, status) VALUES (?, ?, ?)');
 $stmt->execute([$userId, $receiverId, 'pending']);
 
+// Notify receiver
+require_once __DIR__ . '/../helpers/notifications.php';
+$stmt = $db->prepare('SELECT name FROM users WHERE id = ?');
+$stmt->execute([$userId]);
+$actorName = $stmt->fetchColumn();
+createNotification($db, $receiverId, 'connection_request', $userId, null, "$actorName invited you to connect");
+
 jsonSuccess(null, 'Connection request sent');

@@ -74,6 +74,10 @@ $endpoints = [
     'add_comment'            => 'endpoints/add_comment.php',
     'get_comments'           => 'endpoints/get_comments.php',
 
+    // Notifications
+    'get_notifications'      => 'endpoints/get_notifications.php',
+    'mark_notifications_read' => 'endpoints/mark_notifications_read.php',
+
     // Search & Stats
     'search'                 => 'endpoints/search.php',
     'get_user_stats'         => 'endpoints/get_user_stats.php',

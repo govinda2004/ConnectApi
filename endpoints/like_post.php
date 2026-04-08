@@ -47,6 +47,20 @@ if ($existing) {
     $liked = true;
 }
 
+// Notify post owner on like
+if ($liked) {
+    require_once __DIR__ . '/../helpers/notifications.php';
+    $stmt = $db->prepare('SELECT user_id FROM posts WHERE id = ?');
+    $stmt->execute([$postId]);
+    $postOwner = $stmt->fetch();
+    if ($postOwner) {
+        $stmt = $db->prepare('SELECT name FROM users WHERE id = ?');
+        $stmt->execute([$userId]);
+        $actorName = $stmt->fetchColumn();
+        createNotification($db, (int)$postOwner['user_id'], 'like', $userId, $postId, "$actorName liked your post");
+    }
+}
+
 // Get total likes count
 $stmt = $db->prepare('SELECT COUNT(*) FROM post_likes WHERE post_id = ?');
 $stmt->execute([$postId]);

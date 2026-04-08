@@ -42,6 +42,17 @@ $stmt = $db->prepare('SELECT name FROM users WHERE id = ?');
 $stmt->execute([$userId]);
 $user = $stmt->fetch();
 
+// Notify post owner
+require_once __DIR__ . '/../helpers/notifications.php';
+$stmt2 = $db->prepare('SELECT user_id FROM posts WHERE id = ?');
+$stmt2->execute([$postId]);
+$postOwner = $stmt2->fetch();
+if ($postOwner) {
+    $actorName = $user['name'] ?? '';
+    $snippet = mb_substr($comment, 0, 50);
+    createNotification($db, (int)$postOwner['user_id'], 'comment', $userId, $postId, "$actorName commented: \"$snippet\"");
+}
+
 // Get total comments count
 $stmt = $db->prepare('SELECT COUNT(*) FROM post_comments WHERE post_id = ?');
 $stmt->execute([$postId]);
