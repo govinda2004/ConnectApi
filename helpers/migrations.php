@@ -11,6 +11,15 @@ function ensureAccountTypeColumn(PDO $db): void {
     try {
         $db->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS account_type ENUM('normal','organization') NULL AFTER firebase_uid");
     } catch (Throwable $e) {
-        // Ignore to keep existing flows alive on DB engines without IF NOT EXISTS.
+        // Fallback for MySQL versions that don't support "ADD COLUMN IF NOT EXISTS".
+        try {
+            $stmt = $db->query("SHOW COLUMNS FROM users LIKE 'account_type'");
+            $exists = $stmt !== false && $stmt->fetch() !== false;
+            if (!$exists) {
+                $db->exec("ALTER TABLE users ADD COLUMN account_type ENUM('normal','organization') NULL AFTER firebase_uid");
+            }
+        } catch (Throwable $inner) {
+            // Best-effort migration guard; endpoints should continue to run.
+        }
     }
 }
