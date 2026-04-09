@@ -52,6 +52,14 @@ foreach ($posts as &$post) {
     $post['user_id'] = (int)$post['user_id'];
     $post['likes_count'] = (int)$post['likes_count'];
     $post['comments_count'] = (int)$post['comments_count'];
+    $mediaPath = strtolower((string)($post['image'] ?? ''));
+    if (preg_match('/\.(mp4|mov|avi|mkv|webm|3gp|m4v)(\?.*)?$/', $mediaPath) === 1) {
+        $post['media_type'] = 'video';
+    } elseif ($mediaPath !== '') {
+        $post['media_type'] = 'image';
+    } else {
+        $post['media_type'] = 'text';
+    }
 
     // Check if current user liked this post
     $post['is_liked'] = false;

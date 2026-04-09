@@ -15,12 +15,33 @@ $content = trim($_POST['content'] ?? '');
 
 $mediaUrl = null;
 $mediaType = 'text'; // text, image, video
+$mediaFile = null;
 
-// Handle image upload
-if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-    $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+// Accept common multipart keys from different clients.
+foreach (['image', 'media', 'video', 'file'] as $key) {
+    if (isset($_FILES[$key])) {
+        $mediaFile = $_FILES[$key];
+        break;
+    }
+}
+
+if ($mediaFile !== null) {
+    if (($mediaFile['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+        $uploadErr = (int)($mediaFile['error'] ?? UPLOAD_ERR_NO_FILE);
+        $msg = 'Upload failed';
+        if ($uploadErr === UPLOAD_ERR_INI_SIZE || $uploadErr === UPLOAD_ERR_FORM_SIZE) {
+            $msg = 'File too large for server upload limits';
+        } elseif ($uploadErr === UPLOAD_ERR_PARTIAL) {
+            $msg = 'File upload was interrupted';
+        } elseif ($uploadErr === UPLOAD_ERR_NO_FILE) {
+            $msg = 'No media file received';
+        }
+        jsonError($msg, 400);
+    }
+
+    $ext = strtolower(pathinfo((string)$mediaFile['name'], PATHINFO_EXTENSION));
     $imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif'];
-    $videoExts = ['mp4', 'mov', 'avi', 'mkv', 'webm', '3gp'];
+    $videoExts = ['mp4', 'mov', 'avi', 'mkv', 'webm', '3gp', 'm4v'];
 
     if (in_array($ext, $imageExts)) {
         $mediaType = 'image';
@@ -32,7 +53,7 @@ if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
         jsonError('Only image (JPG,PNG,GIF,WEBP) or video (MP4,MOV) files allowed');
     }
 
-    if ($_FILES['image']['size'] > $maxSize) {
+    if (($mediaFile['size'] ?? 0) > $maxSize) {
         jsonError("File must be under " . ($maxSize / 1024 / 1024) . "MB");
     }
 
@@ -40,12 +61,19 @@ if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
     $destDir = __DIR__ . '/../uploads/posts/';
     if (!is_dir($destDir)) mkdir($destDir, 0777, true);
 
-    if (move_uploaded_file($_FILES['image']['tmp_name'], $destDir . $filename)) {
+    if (move_uploaded_file((string)$mediaFile['tmp_name'], $destDir . $filename)) {
         $forwardedProto = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '';
         $isHttps = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')
             || strtolower((string)$forwardedProto) === 'https';
-        $baseUrl = ($isHttps ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'];
+        $scheme = $isHttps ? 'https' : 'http';
+        $scriptDir = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '')), '/');
+        if ($scriptDir === '/' || $scriptDir === '.') {
+            $scriptDir = '';
+        }
+        $baseUrl = $scheme . '://' . $_SERVER['HTTP_HOST'] . $scriptDir;
         $mediaUrl = $baseUrl . '/uploads/posts/' . $filename;
+    } else {
+        jsonError('Failed to store uploaded media file', 500);
     }
 }
 
