@@ -8,6 +8,7 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../helpers/response.php';
 require_once __DIR__ . '/../helpers/auth.php';
+require_once __DIR__ . '/../helpers/migrations.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonError('Method not allowed', 405);
@@ -21,8 +22,9 @@ if (empty($email) || empty($password)) {
 }
 
 $db = getDB();
+ensureAccountTypeColumn($db);
 
-$stmt = $db->prepare('SELECT id, name, email, password FROM users WHERE email = ?');
+$stmt = $db->prepare('SELECT id, name, email, password, account_type FROM users WHERE email = ?');
 $stmt->execute([$email]);
 $user = $stmt->fetch();
 
@@ -36,4 +38,5 @@ jsonAuth($token, [
     'id'    => (int)$user['id'],
     'name'  => $user['name'],
     'email' => $user['email'],
+    'account_type' => $user['account_type'] ?? null,
 ], 'Login successful');

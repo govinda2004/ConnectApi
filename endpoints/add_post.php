@@ -12,7 +12,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') jsonError('Method not allowed', 405);
 
 $userId = requireAuth();
 $content = trim($_POST['content'] ?? '');
-if (empty($content)) jsonError('content is required');
 
 $mediaUrl = null;
 $mediaType = 'text'; // text, image, video
@@ -37,15 +36,21 @@ if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
         jsonError("File must be under " . ($maxSize / 1024 / 1024) . "MB");
     }
 
-    $filename = 'post_' . $userId . '_' . time() . '.' . $ext;
+    $filename = 'post_' . $userId . '_' . time() . '_' . bin2hex(random_bytes(3)) . '.' . $ext;
     $destDir = __DIR__ . '/../uploads/posts/';
     if (!is_dir($destDir)) mkdir($destDir, 0777, true);
 
     if (move_uploaded_file($_FILES['image']['tmp_name'], $destDir . $filename)) {
-        $baseUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http')
-            . '://' . $_SERVER['HTTP_HOST'];
+        $forwardedProto = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '';
+        $isHttps = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')
+            || strtolower((string)$forwardedProto) === 'https';
+        $baseUrl = ($isHttps ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'];
         $mediaUrl = $baseUrl . '/uploads/posts/' . $filename;
     }
+}
+
+if (empty($content) && empty($mediaUrl)) {
+    jsonError('Post content or media is required');
 }
 
 $db = getDB();

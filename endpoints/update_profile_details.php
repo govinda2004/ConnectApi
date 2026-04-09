@@ -9,6 +9,7 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../helpers/response.php';
 require_once __DIR__ . '/../helpers/auth.php';
+require_once __DIR__ . '/../helpers/migrations.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonError('Method not allowed', 405);
@@ -16,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $userId = requireAuth();
 $db = getDB();
+ensureAccountTypeColumn($db);
 
 // Parse JSON body
 $input = json_decode(file_get_contents('php://input'), true);
@@ -28,6 +30,15 @@ if (!$input) {
 if (!empty($input['user_name'])) {
     $db->prepare('UPDATE users SET name = ? WHERE id = ?')
        ->execute([$input['user_name'], $userId]);
+}
+
+if (isset($input['account_type'])) {
+    $accountType = strtolower(trim((string)$input['account_type']));
+    if (!in_array($accountType, ['normal', 'organization'], true)) {
+        jsonError('Invalid account_type. Allowed values: normal, organization');
+    }
+    $db->prepare('UPDATE users SET account_type = ? WHERE id = ?')
+       ->execute([$accountType, $userId]);
 }
 
 // Update profile fields

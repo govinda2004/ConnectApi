@@ -9,6 +9,7 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../helpers/response.php';
 require_once __DIR__ . '/../helpers/auth.php';
+require_once __DIR__ . '/../helpers/migrations.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     jsonError('Method not allowed', 405);
@@ -16,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
 $loggedInUserId = requireAuth();
 $db = getDB();
+ensureAccountTypeColumn($db);
 
 // If user_id param provided, show that user's profile; otherwise show own
 $targetUserId = isset($_GET['user_id']) && !empty($_GET['user_id'])
@@ -25,7 +27,7 @@ $targetUserId = isset($_GET['user_id']) && !empty($_GET['user_id'])
 $isOwnProfile = ($targetUserId === $loggedInUserId);
 
 // User
-$stmt = $db->prepare('SELECT id, name, email, created_at FROM users WHERE id = ?');
+$stmt = $db->prepare('SELECT id, name, email, created_at, account_type FROM users WHERE id = ?');
 $stmt->execute([$targetUserId]);
 $user = $stmt->fetch();
 if (!$user) jsonError('User not found', 404);
@@ -66,6 +68,7 @@ $data = [
         'id'         => (int)$user['id'],
         'name'       => $user['name'],
         'email'      => $isOwnProfile ? $user['email'] : null, // hide email for others
+        'account_type' => $user['account_type'] ?? null,
         'contact_no' => $isOwnProfile ? ($profile['contact_no'] ?? null) : null,
         'created_at' => $user['created_at'],
     ],

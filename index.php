@@ -41,6 +41,8 @@ $endpoints = [
     'update_profile_image'   => 'endpoints/update_profile_image.php',
     'update_profile_banner'  => 'endpoints/update_profile_banner.php',
     'remove_profile_image'   => 'endpoints/remove_profile_image.php',
+    'set_account_type'       => 'endpoints/set_account_type.php',
+    'get_account_type'       => 'endpoints/get_account_type.php',
 
     // Stories
     'add_story'              => 'endpoints/add_story.php',
@@ -97,6 +99,15 @@ $endpoints = [
 ];
 
 if (!isset($endpoints[$route])) {
+    // Backward-compatible fallback: allow direct file route if it exists.
+    // Example: ?route=set_account_type -> endpoints/set_account_type.php
+    if (preg_match('/^[a-zA-Z0-9_\/-]+$/', $route) === 1) {
+        $direct = __DIR__ . '/endpoints/' . $route . '.php';
+        if (is_file($direct)) {
+            require_once $direct;
+            exit;
+        }
+    }
     jsonError('Route not found: ' . $route, 404);
 }
 

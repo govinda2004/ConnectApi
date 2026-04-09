@@ -31,6 +31,13 @@ foreach ($statements as $sql) {
     }
 }
 
+// Backward-compatible migration for old deployments where users.account_type is missing.
+try {
+    $db->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS account_type ENUM('normal','organization') NULL AFTER firebase_uid");
+} catch (PDOException $e) {
+    $errors[] = $e->getMessage();
+}
+
 jsonSuccess([
     'tables_created' => $created,
     'errors' => $errors,

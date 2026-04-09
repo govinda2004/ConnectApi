@@ -8,6 +8,7 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../helpers/response.php';
 require_once __DIR__ . '/../helpers/auth.php';
+require_once __DIR__ . '/../helpers/migrations.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonError('Method not allowed', 405);
@@ -30,6 +31,7 @@ if (strlen($password) < 6) {
 }
 
 $db = getDB();
+ensureAccountTypeColumn($db);
 
 // Check if email exists
 $stmt = $db->prepare('SELECT id FROM users WHERE email = ?');
@@ -40,8 +42,8 @@ if ($stmt->fetch()) {
 
 // Insert user
 $hash = password_hash($password, PASSWORD_BCRYPT);
-$stmt = $db->prepare('INSERT INTO users (name, email, password, login_type) VALUES (?, ?, ?, ?)');
-$stmt->execute([$name, $email, $hash, 'email']);
+$stmt = $db->prepare('INSERT INTO users (name, email, password, login_type, account_type) VALUES (?, ?, ?, ?, ?)');
+$stmt->execute([$name, $email, $hash, 'email', null]);
 $userId = (int)$db->lastInsertId();
 
 // Create profile row
@@ -55,6 +57,7 @@ $user = [
     'id'    => $userId,
     'name'  => $name,
     'email' => $email,
+    'account_type' => null,
 ];
 
 jsonAuth($token, $user, 'Registration successful');
