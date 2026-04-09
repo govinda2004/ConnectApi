@@ -15,8 +15,23 @@ $remote = (int)($_GET['remote'] ?? -1);
 
 $db = getDB();
 
+// Enforce organization feed isolation on backend.
+$accountType = '';
+try {
+    $typeStmt = $db->prepare("SELECT account_type FROM users WHERE id = ? LIMIT 1");
+    $typeStmt->execute([$userId]);
+    $accountType = strtolower(trim((string)$typeStmt->fetchColumn()));
+} catch (Throwable $e) {
+    $accountType = '';
+}
+
 $where = '1=1';
 $params = [];
+
+if ($accountType === 'organization') {
+    $where .= ' AND j.user_id = ?';
+    $params[] = $userId;
+}
 
 if (!empty($search)) {
     $where .= ' AND (j.title LIKE ? OR j.company LIKE ? OR j.skills LIKE ?)';
@@ -32,8 +47,6 @@ if ($remote >= 0) {
     $params[] = $remote;
 }
 
-$total = (int)$db->prepare("SELECT COUNT(*) FROM jobs j WHERE $where")->execute($params) ? $db->query("SELECT FOUND_ROWS()")->fetchColumn() : 0;
-// Simpler count
 $countStmt = $db->prepare("SELECT COUNT(*) FROM jobs j WHERE $where");
 $countStmt->execute($params);
 $total = (int)$countStmt->fetchColumn();
