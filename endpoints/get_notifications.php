@@ -18,11 +18,11 @@ $offset = ($page - 1) * $limit;
 $db = getDB();
 
 // Total + unread count
-$stmt = $db->prepare('SELECT COUNT(*) FROM notifications WHERE user_id = ?');
+$stmt = $db->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ? AND type NOT IN ('message', 'chat')");
 $stmt->execute([$userId]);
 $total = (int)$stmt->fetchColumn();
 
-$stmt = $db->prepare('SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0');
+$stmt = $db->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0 AND type NOT IN ('message', 'chat')");
 $stmt->execute([$userId]);
 $unreadCount = (int)$stmt->fetchColumn();
 
@@ -33,6 +33,7 @@ $stmt = $db->prepare('
     JOIN users u ON n.actor_id = u.id
     LEFT JOIN profiles pr ON n.actor_id = pr.user_id
     WHERE n.user_id = ?
+      AND n.type NOT IN (\'message\', \'chat\')
     ORDER BY n.created_at DESC
     LIMIT ? OFFSET ?
 ');
