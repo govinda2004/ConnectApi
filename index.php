@@ -34,6 +34,7 @@ $endpoints = [
     'logout'                 => 'endpoints/logout.php',
     'logout/all-devices'     => 'endpoints/logout.php',
     'forgot_password'        => 'endpoints/forgot_password.php',
+    'update_device_token'    => 'endpoints/update_device_token.php',
 
     // Profile
     'get_profile_details'    => 'endpoints/get_profile_details.php',

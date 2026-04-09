@@ -20,7 +20,7 @@ if (empty($message)) jsonError('message is required');
 
 $db = getDB();
 
-$stmt = $db->prepare('SELECT id, name FROM users WHERE id = ?');
+$stmt = $db->prepare('SELECT id, name, device_token FROM users WHERE id = ?');
 $stmt->execute([$receiverId]);
 $receiver = $stmt->fetch();
 if (!$receiver) jsonError('Receiver not found', 404);
@@ -42,6 +42,23 @@ require_once __DIR__ . '/../helpers/notifications.php';
 $senderName = $sender['name'] ?? '';
 $snippet = mb_substr($message, 0, 40);
 createNotification($db, $receiverId, 'message', $userId, $msgId, "$senderName sent you a message: \"$snippet\"");
+
+// Push notification through FCM (if receiver token + service account are available)
+require_once __DIR__ . '/../helpers/fcm.php';
+$receiverDeviceToken = trim((string)($receiver['device_token'] ?? ''));
+if ($receiverDeviceToken !== '') {
+    sendFcmToDeviceToken(
+        $receiverDeviceToken,
+        $senderName !== '' ? $senderName : 'New message',
+        $snippet,
+        [
+            'type' => 'chat',
+            'sender_id' => (string)$userId,
+            'receiver_id' => (string)$receiverId,
+            'message_id' => (string)$msgId,
+        ]
+    );
+}
 
 jsonSuccess([
     'id'            => $msgId,
