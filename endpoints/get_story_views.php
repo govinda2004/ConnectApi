@@ -32,5 +32,8 @@ $stmt = $db->prepare('
 ');
 $stmt->execute([$storyId]);
 $views = $stmt->fetchAll();
+foreach ($views as &$v) {
+    $v['user_id'] = (int)($v['user_id'] ?? 0);
+}
 
 jsonSuccess($views, 'Story views fetched');

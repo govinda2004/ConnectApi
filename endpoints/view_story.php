@@ -17,15 +17,19 @@ if ($storyId <= 0) jsonError('story_id is required');
 $db = getDB();
 
 // Check story exists
-$stmt = $db->prepare('SELECT id FROM stories WHERE id = ? AND expires_at > NOW()');
+$stmt = $db->prepare('SELECT id, user_id FROM stories WHERE id = ? AND expires_at > NOW()');
 $stmt->execute([$storyId]);
-if (!$stmt->fetch()) jsonError('Story not found or expired', 404);
+$story = $stmt->fetch();
+if (!$story) jsonError('Story not found or expired', 404);
+$ownerId = (int)($story['user_id'] ?? 0);
 
-// Record view (ignore if already viewed)
-$stmt = $db->prepare('SELECT id FROM story_views WHERE user_id = ? AND story_id = ?');
-$stmt->execute([$userId, $storyId]);
-if (!$stmt->fetch()) {
-    $db->prepare('INSERT INTO story_views (user_id, story_id) VALUES (?, ?)')->execute([$userId, $storyId]);
+// Record view only for non-owner (ignore if already viewed)
+if ($ownerId !== $userId) {
+    $stmt = $db->prepare('SELECT id FROM story_views WHERE user_id = ? AND story_id = ?');
+    $stmt->execute([$userId, $storyId]);
+    if (!$stmt->fetch()) {
+        $db->prepare('INSERT INTO story_views (user_id, story_id) VALUES (?, ?)')->execute([$userId, $storyId]);
+    }
 }
 
 // Get view count
