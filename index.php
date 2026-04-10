@@ -95,6 +95,21 @@ $endpoints = [
     'search'                 => 'endpoints/search.php',
     'get_user_stats'         => 'endpoints/get_user_stats.php',
 
+    // Block & Report
+    'block_user'             => 'endpoints/block_user.php',
+    'unblock_user'           => 'endpoints/unblock_user.php',
+    'get_blocked_users'      => 'endpoints/get_blocked_users.php',
+    'report_user'            => 'endpoints/report_user.php',
+
+    // Save & Share Posts
+    'save_post'              => 'endpoints/save_post.php',
+    'get_saved_posts'        => 'endpoints/get_saved_posts.php',
+    'share_post'             => 'endpoints/share_post.php',
+
+    // Export & Activity
+    'export_job_applicants'  => 'endpoints/export_job_applicants.php',
+    'get_user_activity'      => 'endpoints/get_user_activity.php',
+
     // Setup (run once)
     'setup_db'               => 'endpoints/setup_db.php',
 ];

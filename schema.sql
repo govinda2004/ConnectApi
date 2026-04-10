@@ -195,3 +195,46 @@ CREATE TABLE IF NOT EXISTS messages (
   INDEX idx_created_at (created_at),
   INDEX idx_conversation (sender_id, receiver_id, created_at)
 );
+
+-- Block system
+CREATE TABLE IF NOT EXISTS blocks (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  blocker_id INT NOT NULL,
+  blocked_id INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_block (blocker_id, blocked_id),
+  INDEX idx_blocker (blocker_id),
+  INDEX idx_blocked (blocked_id)
+);
+
+-- Report system
+CREATE TABLE IF NOT EXISTS reports (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  reporter_id INT NOT NULL,
+  reported_id INT NOT NULL,
+  reason VARCHAR(255) NOT NULL,
+  description TEXT NULL,
+  status ENUM('pending','reviewed','resolved') DEFAULT 'pending',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_reported (reported_id),
+  INDEX idx_status (status)
+);
+
+-- Save posts
+CREATE TABLE IF NOT EXISTS saved_posts (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  post_id INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_save (user_id, post_id),
+  INDEX idx_user (user_id)
+);
+
+-- Share posts
+CREATE TABLE IF NOT EXISTS post_shares (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  post_id INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_post (post_id)
+);
