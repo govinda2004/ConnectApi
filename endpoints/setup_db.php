@@ -7,6 +7,7 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../helpers/response.php';
+require_once __DIR__ . '/../helpers/migrations.php';
 
 $db = getDB();
 
@@ -31,19 +32,27 @@ foreach ($statements as $sql) {
     }
 }
 
-// Backward-compatible migration for old deployments where users.account_type is missing.
-try {
-    $db->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS account_type ENUM('normal','organization') NULL AFTER firebase_uid");
-} catch (PDOException $e) {
-    $errors[] = $e->getMessage();
-}
+// Backward-compatible migrations for old deployments.
+ensureAccountTypeColumn($db);
+ensureFcmTokenColumn($db);
 
-// Backward-compatible migration for FCM token column.
+// Verify expected columns and report if still missing.
+$accountTypeExists = false;
+$fcmTokenExists = false;
 try {
-    $db->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS fcm_token VARCHAR(512) NULL AFTER device_token");
-} catch (PDOException $e) {
+    $stmt = $db->query("SHOW COLUMNS FROM users LIKE 'account_type'");
+    $accountTypeExists = $stmt !== false && $stmt->fetch() !== false;
+} catch (Throwable $e) {
     $errors[] = $e->getMessage();
 }
+try {
+    $stmt = $db->query("SHOW COLUMNS FROM users LIKE 'fcm_token'");
+    $fcmTokenExists = $stmt !== false && $stmt->fetch() !== false;
+} catch (Throwable $e) {
+    $errors[] = $e->getMessage();
+}
+if (!$accountTypeExists) $errors[] = "Missing expected column users.account_type";
+if (!$fcmTokenExists) $errors[] = "Missing expected column users.fcm_token";
 
 jsonSuccess([
     'tables_created' => $created,

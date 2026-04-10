@@ -23,3 +23,24 @@ function ensureAccountTypeColumn(PDO $db): void {
         }
     }
 }
+
+function ensureFcmTokenColumn(PDO $db): void {
+    static $checked = false;
+    if ($checked) return;
+    $checked = true;
+
+    try {
+        $db->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS fcm_token VARCHAR(512) NULL AFTER device_token");
+    } catch (Throwable $e) {
+        // Fallback for MySQL versions that don't support "ADD COLUMN IF NOT EXISTS".
+        try {
+            $stmt = $db->query("SHOW COLUMNS FROM users LIKE 'fcm_token'");
+            $exists = $stmt !== false && $stmt->fetch() !== false;
+            if (!$exists) {
+                $db->exec("ALTER TABLE users ADD COLUMN fcm_token VARCHAR(512) NULL AFTER device_token");
+            }
+        } catch (Throwable $inner) {
+            // Best-effort migration guard; endpoints should continue to run.
+        }
+    }
+}

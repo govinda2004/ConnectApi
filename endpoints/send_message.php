@@ -15,6 +15,7 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../helpers/response.php';
 require_once __DIR__ . '/../helpers/auth.php';
+require_once __DIR__ . '/../helpers/migrations.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') jsonError('Method not allowed', 405);
 
@@ -27,6 +28,7 @@ if ($receiverId <= 0) jsonError('receiver_id is required');
 if (empty($message)) jsonError('message is required');
 
 $db = getDB();
+ensureFcmTokenColumn($db);
 
 // Ensure client_message_id column exists (backward-compatible migration)
 try {

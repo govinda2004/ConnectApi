@@ -4,9 +4,11 @@
  */
 
 require_once __DIR__ . '/fcm.php';
+require_once __DIR__ . '/migrations.php';
 
 function createNotification($db, $userId, $type, $actorId, $targetId, $message, $sendPush = true) {
     if ($userId == $actorId) return; // don't notify yourself
+    ensureFcmTokenColumn($db);
     $stmt = $db->prepare('INSERT INTO notifications (user_id, type, actor_id, target_id, message) VALUES (?, ?, ?, ?, ?)');
     $stmt->execute([$userId, $type, $actorId, $targetId, $message]);
 
