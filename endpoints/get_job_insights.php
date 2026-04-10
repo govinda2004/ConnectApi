@@ -44,7 +44,7 @@ $saveCount = (int)$stmt->fetchColumn();
 // Applicants list with details
 $stmt = $db->prepare('
     SELECT ja.id, ja.user_id, ja.full_name, ja.email, ja.phone,
-           ja.salary_expectation, ja.status, ja.resume_url,
+           ja.cover_letter, ja.salary_expectation, ja.status, ja.resume_url,
            ja.created_at AS applied_at,
            u.name, pr.profile_image, pr.headline
     FROM job_applications ja
