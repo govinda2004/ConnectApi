@@ -12,10 +12,11 @@ $offset = ($page - 1) * $limit;
 $search = trim($_GET['q'] ?? '');
 $type = trim($_GET['type'] ?? '');
 $remote = (int)($_GET['remote'] ?? -1);
+$mine = (int)($_GET['mine'] ?? -1); // -1: default behavior, 0: all, 1: only my jobs
 
 $db = getDB();
 
-// Enforce organization feed isolation on backend.
+// Determine account type for backward-compatible filtering behavior.
 $accountType = '';
 try {
     $typeStmt = $db->prepare("SELECT account_type FROM users WHERE id = ? LIMIT 1");
@@ -28,7 +29,11 @@ try {
 $where = '1=1';
 $params = [];
 
-if ($accountType === 'organization') {
+if ($mine === 1) {
+    $where .= ' AND j.user_id = ?';
+    $params[] = $userId;
+} elseif ($mine !== 0 && $accountType === 'organization') {
+    // Backward compatibility: old clients for organization accounts still see only own jobs.
     $where .= ' AND j.user_id = ?';
     $params[] = $userId;
 }

@@ -93,7 +93,7 @@ if ($receiverFcmToken === '') {
     $receiverFcmToken = trim((string)($receiver['device_token'] ?? ''));
 }
 if ($receiverFcmToken !== '') {
-    sendFcmToDeviceToken(
+    $pushOk = sendFcmToDeviceToken(
         $receiverFcmToken,
         $senderName !== '' ? $senderName : 'New message',
         $snippet,
@@ -106,6 +106,13 @@ if ($receiverFcmToken !== '') {
             'message_id' => (string)$msgId,
         ]
     );
+    if (!$pushOk) {
+        error_log('[CHAT_PUSH] FCM send failed for message_id=' . $msgId . ', receiver_id=' . $receiverId);
+    } else {
+        error_log('[CHAT_PUSH] FCM send success for message_id=' . $msgId . ', receiver_id=' . $receiverId);
+    }
+} else {
+    error_log('[CHAT_PUSH] skipped: no receiver token for receiver_id=' . $receiverId);
 }
 
 jsonSuccess([

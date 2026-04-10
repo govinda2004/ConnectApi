@@ -84,15 +84,27 @@ function sendFcmToDeviceToken(
     string $body,
     array $data = []
 ): bool {
-    if ($deviceToken === '') return false;
+    if ($deviceToken === '') {
+        error_log('[FCM] skipped: empty device token');
+        return false;
+    }
 
     $service = loadFcmServiceAccount();
-    if (!$service) return false;
+    if (!$service) {
+        error_log('[FCM] skipped: service account not configured');
+        return false;
+    }
     $projectId = $service['project_id'] ?? '';
-    if ($projectId === '') return false;
+    if ($projectId === '') {
+        error_log('[FCM] skipped: project_id missing in service account');
+        return false;
+    }
 
     $accessToken = getFcmAccessToken();
-    if (!$accessToken) return false;
+    if (!$accessToken) {
+        error_log('[FCM] skipped: access token generation failed');
+        return false;
+    }
 
     $payload = [
         'message' => [
@@ -124,7 +136,18 @@ function sendFcmToDeviceToken(
     ]);
     $response = curl_exec($ch);
     $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
     curl_close($ch);
 
-    return $response !== false && $status >= 200 && $status < 300;
+    if ($response === false) {
+        error_log('[FCM] curl failed: ' . $curlError);
+        return false;
+    }
+    if ($status < 200 || $status >= 300) {
+        error_log('[FCM] send failed: http=' . $status . ' response=' . $response);
+        return false;
+    }
+
+    error_log('[FCM] send success: project=' . $projectId . ' http=' . $status);
+    return true;
 }
