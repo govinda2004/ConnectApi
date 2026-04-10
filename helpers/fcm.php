@@ -13,6 +13,13 @@ function fcmBase64UrlEncode(string $data): string
     return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
 }
 
+function fcmMaskToken(string $token): string
+{
+    $len = strlen($token);
+    if ($len <= 12) return $token;
+    return substr($token, 0, 6) . '...' . substr($token, -6);
+}
+
 function loadFcmServiceAccount(): ?array
 {
     $raw = getenv('CONNECTIN_FCM_SERVICE_ACCOUNT_JSON');
@@ -82,29 +89,47 @@ function sendFcmToDeviceToken(
     string $deviceToken,
     string $title,
     string $body,
-    array $data = []
+    array $data = [],
+    ?array &$meta = null
 ): bool {
+    $meta = [
+        'function_hit' => true,
+        'attempted' => false,
+        'ok' => false,
+        'reason' => '',
+        'http_status' => null,
+        'response_excerpt' => null,
+        'token_masked' => fcmMaskToken($deviceToken),
+    ];
     if ($deviceToken === '') {
         error_log('[FCM] skipped: empty device token');
+        $meta['reason'] = 'empty_device_token';
         return false;
     }
 
     $service = loadFcmServiceAccount();
     if (!$service) {
         error_log('[FCM] skipped: service account not configured');
+        $meta['reason'] = 'service_account_not_configured';
         return false;
     }
     $projectId = $service['project_id'] ?? '';
     if ($projectId === '') {
         error_log('[FCM] skipped: project_id missing in service account');
+        $meta['reason'] = 'project_id_missing';
         return false;
     }
 
     $accessToken = getFcmAccessToken();
     if (!$accessToken) {
         error_log('[FCM] skipped: access token generation failed');
+        $meta['reason'] = 'access_token_failed';
         return false;
     }
+
+    $maskedToken = fcmMaskToken($deviceToken);
+    $meta['attempted'] = true;
+    error_log('[FCM] send attempt: project=' . $projectId . ' token=' . $maskedToken . ' title=' . $title);
 
     $payload = [
         'message' => [
@@ -138,16 +163,23 @@ function sendFcmToDeviceToken(
     $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $curlError = curl_error($ch);
     curl_close($ch);
+    $meta['http_status'] = $status;
+    $meta['response_excerpt'] = is_string($response) ? mb_substr($response, 0, 300) : null;
 
     if ($response === false) {
-        error_log('[FCM] curl failed: ' . $curlError);
+        error_log('[FCM] curl failed: token=' . $maskedToken . ' error=' . $curlError);
+        $meta['reason'] = 'curl_failed';
+        $meta['response_excerpt'] = mb_substr((string)$curlError, 0, 300);
         return false;
     }
     if ($status < 200 || $status >= 300) {
-        error_log('[FCM] send failed: http=' . $status . ' response=' . $response);
+        error_log('[FCM] send failed: token=' . $maskedToken . ' http=' . $status . ' response=' . $response);
+        $meta['reason'] = 'http_' . $status;
         return false;
     }
 
-    error_log('[FCM] send success: project=' . $projectId . ' http=' . $status);
+    error_log('[FCM] send success: project=' . $projectId . ' token=' . $maskedToken . ' http=' . $status . ' response=' . $response);
+    $meta['ok'] = true;
+    $meta['reason'] = 'sent';
     return true;
 }

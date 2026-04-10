@@ -92,7 +92,16 @@ $receiverFcmToken = trim((string)($receiver['fcm_token'] ?? ''));
 if ($receiverFcmToken === '') {
     $receiverFcmToken = trim((string)($receiver['device_token'] ?? ''));
 }
+$pushMeta = [
+    'function_hit' => false,
+    'attempted' => false,
+    'ok' => false,
+    'reason' => 'not_called',
+    'http_status' => null,
+    'response_excerpt' => null,
+];
 if ($receiverFcmToken !== '') {
+    error_log('[CHAT_PUSH] calling sendFcmToDeviceToken for message_id=' . $msgId . ', receiver_id=' . $receiverId);
     $pushOk = sendFcmToDeviceToken(
         $receiverFcmToken,
         $senderName !== '' ? $senderName : 'New message',
@@ -104,14 +113,16 @@ if ($receiverFcmToken !== '') {
             'sender_name' => (string)$senderName,
             'receiver_id' => (string)$receiverId,
             'message_id' => (string)$msgId,
-        ]
+        ],
+        $pushMeta
     );
     if (!$pushOk) {
-        error_log('[CHAT_PUSH] FCM send failed for message_id=' . $msgId . ', receiver_id=' . $receiverId);
+        error_log('[CHAT_PUSH] FCM send failed for message_id=' . $msgId . ', receiver_id=' . $receiverId . ', meta=' . json_encode($pushMeta));
     } else {
-        error_log('[CHAT_PUSH] FCM send success for message_id=' . $msgId . ', receiver_id=' . $receiverId);
+        error_log('[CHAT_PUSH] FCM send success for message_id=' . $msgId . ', receiver_id=' . $receiverId . ', meta=' . json_encode($pushMeta));
     }
 } else {
+    $pushMeta['reason'] = 'receiver_token_missing';
     error_log('[CHAT_PUSH] skipped: no receiver token for receiver_id=' . $receiverId);
 }
 
@@ -124,4 +135,5 @@ jsonSuccess([
     'client_message_id' => $clientMessageId !== '' ? $clientMessageId : null,
     'created_at'        => $msg['created_at'],
     'is_read'           => false,
+    'push_debug'        => $pushMeta,
 ], 'Message sent');
