@@ -38,6 +38,13 @@ try {
     $errors[] = $e->getMessage();
 }
 
+// Backward-compatible migration for FCM token column.
+try {
+    $db->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS fcm_token VARCHAR(512) NULL AFTER device_token");
+} catch (PDOException $e) {
+    $errors[] = $e->getMessage();
+}
+
 jsonSuccess([
     'tables_created' => $created,
     'errors' => $errors,

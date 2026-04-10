@@ -40,6 +40,6 @@ $job = $stmt->fetch();
 $stmt = $db->prepare('SELECT name FROM users WHERE id = ?');
 $stmt->execute([$userId]);
 $applicantName = $stmt->fetchColumn();
-createNotification($db, (int)$job['user_id'], 'comment', $userId, $jobId, "$applicantName applied for {$job['title']}");
+createNotification($db, (int)$job['user_id'], 'job_application', $userId, $jobId, "$applicantName applied for {$job['title']}");
 
 jsonSuccess(null, 'Application submitted successfully');

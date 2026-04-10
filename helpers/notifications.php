@@ -13,10 +13,10 @@ function createNotification($db, $userId, $type, $actorId, $targetId, $message, 
     if (!$sendPush) return;
 
     // Best-effort push notification for all in-app actions.
-    $stmt = $db->prepare('SELECT device_token FROM users WHERE id = ?');
+    $stmt = $db->prepare('SELECT COALESCE(NULLIF(fcm_token, ""), NULLIF(device_token, ""), "") AS push_token FROM users WHERE id = ?');
     $stmt->execute([$userId]);
-    $deviceToken = trim((string)$stmt->fetchColumn());
-    if ($deviceToken === '') return;
+    $fcmToken = trim((string)$stmt->fetchColumn());
+    if ($fcmToken === '') return;
 
     $stmt = $db->prepare('SELECT name FROM users WHERE id = ?');
     $stmt->execute([$actorId]);
@@ -24,12 +24,14 @@ function createNotification($db, $userId, $type, $actorId, $targetId, $message, 
     $title = $actorName !== '' ? $actorName : 'ConnectIn';
 
     sendFcmToDeviceToken(
-        $deviceToken,
+        $fcmToken,
         $title,
         $message,
         [
             'type' => (string)$type,
+            'notification_type' => (string)$type,
             'actor_id' => (string)$actorId,
+            'actor_name' => (string)$actorName,
             'target_id' => $targetId !== null ? (string)$targetId : '',
         ]
     );

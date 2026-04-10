@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
   account_type ENUM('normal','organization') NULL,
   login_type ENUM('email','google','apple') DEFAULT 'email',
   device_token VARCHAR(255) NULL,
+  fcm_token VARCHAR(512) NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

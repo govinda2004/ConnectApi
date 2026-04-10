@@ -36,7 +36,7 @@ try {
     // Column/index already exists — ignore
 }
 
-$stmt = $db->prepare('SELECT id, name, device_token FROM users WHERE id = ?');
+$stmt = $db->prepare('SELECT id, name, fcm_token, device_token FROM users WHERE id = ?');
 $stmt->execute([$receiverId]);
 $receiver = $stmt->fetch();
 if (!$receiver) jsonError('Receiver not found', 404);
@@ -86,15 +86,20 @@ $snippet = mb_substr($message, 0, 40);
 // Chat notifications: FCM push ONLY — do NOT store in notifications DB.
 // This ensures chat messages don't appear in the notification list screen.
 require_once __DIR__ . '/../helpers/fcm.php';
-$receiverDeviceToken = trim((string)($receiver['device_token'] ?? ''));
-if ($receiverDeviceToken !== '') {
+$receiverFcmToken = trim((string)($receiver['fcm_token'] ?? ''));
+if ($receiverFcmToken === '') {
+    $receiverFcmToken = trim((string)($receiver['device_token'] ?? ''));
+}
+if ($receiverFcmToken !== '') {
     sendFcmToDeviceToken(
-        $receiverDeviceToken,
+        $receiverFcmToken,
         $senderName !== '' ? $senderName : 'New message',
         $snippet,
         [
             'type' => 'chat',
+            'notification_type' => 'chat',
             'sender_id' => (string)$userId,
+            'sender_name' => (string)$senderName,
             'receiver_id' => (string)$receiverId,
             'message_id' => (string)$msgId,
         ]
