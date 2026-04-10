@@ -44,9 +44,18 @@ $receiver = $stmt->fetch();
 if (!$receiver) jsonError('Receiver not found', 404);
 
 // Block check: either direction prevents messaging
-$stmt = $db->prepare('SELECT id FROM blocks WHERE (blocker_id = ? AND blocked_id = ?) OR (blocker_id = ? AND blocked_id = ?)');
+$stmt = $db->prepare('SELECT blocker_id, blocked_id FROM blocks WHERE (blocker_id = ? AND blocked_id = ?) OR (blocker_id = ? AND blocked_id = ?) LIMIT 1');
 $stmt->execute([$userId, $receiverId, $receiverId, $userId]);
-if ($stmt->fetch()) jsonError('Cannot send message to this user', 403);
+$blockRow = $stmt->fetch();
+if ($blockRow) {
+    $blockedByMe = (int)$blockRow['blocker_id'] === $userId;
+    $reason = $blockedByMe ? 'blocked_by_sender' : 'blocked_by_receiver';
+    error_log('[CHAT_BLOCK] send blocked: sender_id=' . $userId . ', receiver_id=' . $receiverId . ', reason=' . $reason);
+    if ($blockedByMe) {
+        jsonError('Cannot send message: you blocked this user', 403, ['reason' => $reason]);
+    }
+    jsonError('Cannot send message: you are blocked by this user', 403, ['reason' => $reason]);
+}
 
 $stmt = $db->prepare('SELECT name FROM users WHERE id = ?');
 $stmt->execute([$userId]);
@@ -89,9 +98,23 @@ $snippet = mb_substr($message, 0, 40);
 // This ensures chat messages don't appear in the notification list screen.
 require_once __DIR__ . '/../helpers/fcm.php';
 $receiverFcmToken = trim((string)($receiver['fcm_token'] ?? ''));
+$tokenSource = 'fcm_token';
 if ($receiverFcmToken === '') {
     $receiverFcmToken = trim((string)($receiver['device_token'] ?? ''));
+    $tokenSource = 'device_token';
 }
+$maskedReceiverToken = function_exists('fcmMaskToken')
+    ? fcmMaskToken($receiverFcmToken)
+    : (strlen($receiverFcmToken) > 12
+        ? substr($receiverFcmToken, 0, 6) . '...' . substr($receiverFcmToken, -6)
+        : $receiverFcmToken);
+error_log(
+    '[CHAT_PUSH] precheck: message_id=' . $msgId .
+    ', receiver_id=' . $receiverId .
+    ', token_source=' . $tokenSource .
+    ', token_present=' . ($receiverFcmToken !== '' ? 'yes' : 'no') .
+    ', token=' . $maskedReceiverToken
+);
 $pushMeta = [
     'function_hit' => false,
     'attempted' => false,
