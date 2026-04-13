@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../helpers/response.php';
 require_once __DIR__ . '/../helpers/auth.php';
+require_once __DIR__ . '/../helpers/time.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') jsonError('Method not allowed', 405);
 
@@ -19,6 +20,7 @@ if (!$job) jsonError('Job not found', 404);
 
 $job['id'] = (int)$job['id'];
 $job['is_mine'] = ((int)$job['user_id'] === $userId);
+$job['created_at_utc'] = toUtcIso8601($job['created_at'] ?? null);
 
 // Check if user already applied
 $stmt = $db->prepare('SELECT id FROM job_applications WHERE job_id = ? AND user_id = ?');

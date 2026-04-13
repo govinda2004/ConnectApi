@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../helpers/response.php';
 require_once __DIR__ . '/../helpers/auth.php';
+require_once __DIR__ . '/../helpers/time.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') jsonError('Method not allowed', 405);
 
@@ -72,6 +73,7 @@ foreach ($jobs as &$job) {
     $job['is_saved'] = (bool)$job['is_saved'];
     $job['is_mine'] = ($job['user_id'] === $userId);
     $job['applications_count'] = (int)$job['applications_count'];
+    $job['created_at_utc'] = toUtcIso8601($job['created_at'] ?? null);
 }
 
 jsonSuccess(['jobs' => $jobs, 'total' => $total, 'page' => $page, 'has_more' => ($offset + $limit) < $total], 'Jobs fetched');

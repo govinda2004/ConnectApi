@@ -32,5 +32,11 @@ function getDB(): PDO {
     }
 
     $pdo = new PDO($dsn, $user, $pass, $options);
+    // Keep DB session in UTC so all CURRENT_TIMESTAMP values are consistent.
+    try {
+        $pdo->exec("SET time_zone = '+00:00'");
+    } catch (Throwable $e) {
+        // Best effort only; do not block API if this fails.
+    }
     return $pdo;
 }

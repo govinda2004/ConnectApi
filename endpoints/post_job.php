@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../helpers/response.php';
 require_once __DIR__ . '/../helpers/auth.php';
+require_once __DIR__ . '/../helpers/time.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') jsonError('Method not allowed', 405);
 
@@ -27,4 +28,8 @@ $jobId = (int)$db->lastInsertId();
 
 $stmt = $db->prepare('SELECT * FROM jobs WHERE id = ?');
 $stmt->execute([$jobId]);
-jsonSuccess($stmt->fetch(), 'Job posted successfully');
+$job = $stmt->fetch();
+if ($job) {
+    $job['created_at_utc'] = toUtcIso8601($job['created_at'] ?? null);
+}
+jsonSuccess($job, 'Job posted successfully');

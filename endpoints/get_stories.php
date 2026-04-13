@@ -7,6 +7,7 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../helpers/response.php';
 require_once __DIR__ . '/../helpers/auth.php';
+require_once __DIR__ . '/../helpers/time.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') jsonError('Method not allowed', 405);
 
@@ -57,6 +58,8 @@ foreach ($stories as &$s) {
     $s['id'] = (int)$s['id'];
     $s['user_id'] = (int)$s['user_id'];
     $s['is_viewed'] = in_array($s['id'], $viewedIds);
+    $s['created_at_utc'] = toUtcIso8601($s['created_at'] ?? null);
+    $s['expires_at_utc'] = toUtcIso8601($s['expires_at'] ?? null);
 
     // Get view count
     $stmt2 = $db->prepare('SELECT COUNT(*) FROM story_views WHERE story_id = ?');

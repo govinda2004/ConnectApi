@@ -15,6 +15,7 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../helpers/response.php';
 require_once __DIR__ . '/../helpers/auth.php';
+require_once __DIR__ . '/../helpers/time.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     jsonError('Method not allowed', 405);
@@ -121,6 +122,7 @@ foreach ($posts as $i => &$post) {
     $post['user_id'] = (int)$post['user_id'];
     $post['likes_count'] = (int)$post['likes_count'];
     $post['comments_count'] = (int)$post['comments_count'];
+    $post['created_at_utc'] = toUtcIso8601($post['created_at'] ?? null);
 
     // Media type
     $mediaPath = strtolower((string)($post['image'] ?? ''));

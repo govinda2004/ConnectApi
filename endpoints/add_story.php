@@ -11,6 +11,7 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../helpers/response.php';
 require_once __DIR__ . '/../helpers/auth.php';
+require_once __DIR__ . '/../helpers/time.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') jsonError('Method not allowed', 405);
 
@@ -99,6 +100,8 @@ if (!empty($imageUrls)) {
         $story = $stmtOne->fetch();
         if ($story) {
             $story['id'] = (int)$story['id'];
+            $story['created_at_utc'] = toUtcIso8601($story['created_at'] ?? null);
+            $story['expires_at_utc'] = toUtcIso8601($story['expires_at'] ?? null);
             $created[] = $story;
         }
     }
@@ -111,6 +114,8 @@ if (!empty($imageUrls)) {
     $story = $stmtOne->fetch();
     if ($story) {
         $story['id'] = (int)$story['id'];
+        $story['created_at_utc'] = toUtcIso8601($story['created_at'] ?? null);
+        $story['expires_at_utc'] = toUtcIso8601($story['expires_at'] ?? null);
         $created[] = $story;
     }
 }

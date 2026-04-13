@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../helpers/response.php';
 require_once __DIR__ . '/../helpers/auth.php';
+require_once __DIR__ . '/../helpers/time.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') jsonError('Method not allowed', 405);
 
@@ -15,6 +16,8 @@ $jobs = $stmt->fetchAll();
 foreach ($jobs as &$j) {
     $j['id'] = (int)$j['id'];
     $j['is_saved'] = true;
+    $j['created_at_utc'] = toUtcIso8601($j['created_at'] ?? null);
+    $j['saved_at_utc'] = toUtcIso8601($j['saved_at'] ?? null);
 }
 
 jsonSuccess($jobs, 'Saved jobs fetched');

@@ -7,6 +7,7 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../helpers/response.php';
 require_once __DIR__ . '/../helpers/auth.php';
+require_once __DIR__ . '/../helpers/time.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') jsonError('Method not allowed', 405);
 
@@ -90,6 +91,7 @@ $stmt = $db->prepare('SELECT * FROM posts WHERE id = ?');
 $stmt->execute([$postId]);
 $post = $stmt->fetch();
 $post['media_type'] = $mediaType;
+$post['created_at_utc'] = toUtcIso8601($post['created_at'] ?? null);
 
 // Notify all connections about new post
 require_once __DIR__ . '/../helpers/notifications.php';
