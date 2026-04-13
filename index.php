@@ -50,6 +50,30 @@ if (preg_match('#^api/admin/users/(\d+)/status$#', $route, $m) === 1) {
     require_once __DIR__ . '/endpoints/api/admin/users/status.php';
     exit;
 }
+if ($route === 'api/admin/admins') {
+    require_once __DIR__ . '/endpoints/api/admin/admins/index.php';
+    exit;
+}
+if (preg_match('#^api/admin/admins/(\d+)$#', $route, $m) === 1) {
+    $_GET['id'] = $m[1];
+    require_once __DIR__ . '/endpoints/api/admin/admins/item.php';
+    exit;
+}
+if ($route === 'api/admin/activity/logs') {
+    require_once __DIR__ . '/endpoints/api/admin/activity/logs.php';
+    exit;
+}
+if (preg_match('#^api/admin/data/([a-z_]+)$#', $route, $m) === 1) {
+    $_GET['resource'] = $m[1];
+    require_once __DIR__ . '/endpoints/api/admin/data/index.php';
+    exit;
+}
+if (preg_match('#^api/admin/data/([a-z_]+)/(\d+)$#', $route, $m) === 1) {
+    $_GET['resource'] = $m[1];
+    $_GET['id'] = $m[2];
+    require_once __DIR__ . '/endpoints/api/admin/data/item.php';
+    exit;
+}
 
 $endpoints = [
     // Auth
@@ -138,6 +162,13 @@ $endpoints = [
 
     // Setup (run once)
     'setup_db'               => 'endpoints/setup_db.php',
+    // Admin API (static routes)
+    'api/admin/login'        => 'endpoints/api/admin/login.php',
+    'api/admin/profile'      => 'endpoints/api/admin/profile.php',
+    'api/admin/dashboard/stats' => 'endpoints/api/admin/dashboard/stats.php',
+    'api/admin/activity/recent' => 'endpoints/api/admin/activity/recent.php',
+    'api/admin/change-password' => 'endpoints/api/admin/change_password.php',
+    'api/admin/settings'     => 'endpoints/api/admin/settings.php',
 ];
 
 if (!isset($endpoints[$route])) {
