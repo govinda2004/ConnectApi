@@ -26,6 +26,31 @@ if (empty($route)) {
     $route = trim($uri, '/');
 }
 
+// Admin API dynamic routes
+if ($route === 'api/admin/users') {
+    require_once __DIR__ . '/endpoints/api/admin/users/index.php';
+    exit;
+}
+if (preg_match('#^api/admin/users/(\d+)$#', $route, $m) === 1) {
+    $_GET['id'] = $m[1];
+    if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+        require_once __DIR__ . '/endpoints/api/admin/users/delete.php';
+    } else {
+        require_once __DIR__ . '/endpoints/api/admin/users/show.php';
+    }
+    exit;
+}
+if (preg_match('#^api/admin/users/(\d+)/activity$#', $route, $m) === 1) {
+    $_GET['id'] = $m[1];
+    require_once __DIR__ . '/endpoints/api/admin/users/activity.php';
+    exit;
+}
+if (preg_match('#^api/admin/users/(\d+)/status$#', $route, $m) === 1) {
+    $_GET['id'] = $m[1];
+    require_once __DIR__ . '/endpoints/api/admin/users/status.php';
+    exit;
+}
+
 $endpoints = [
     // Auth
     'register'               => 'endpoints/register.php',
