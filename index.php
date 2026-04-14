@@ -63,6 +63,12 @@ if (preg_match('#^api/admin/users/(\d+)/activity/(\d+)$#', $route, $m) === 1) {
     require_once __DIR__ . '/endpoints/api/admin/users/activity_item.php';
     exit;
 }
+if (preg_match('#^api/admin/users/(\d+)/stories/(\d+)$#', $route, $m) === 1) {
+    $_GET['id'] = $m[1];
+    $_GET['story_id'] = $m[2];
+    require_once __DIR__ . '/endpoints/api/admin/users/story_item.php';
+    exit;
+}
 if (preg_match('#^api/admin/users/(\d+)/activity$#', $route, $m) === 1) {
     $_GET['id'] = $m[1];
     require_once __DIR__ . '/endpoints/api/admin/users/activity.php';

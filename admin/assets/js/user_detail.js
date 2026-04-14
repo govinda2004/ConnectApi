@@ -32,6 +32,7 @@
       const activity = data.activity || [];
       const appliedJobs = data.applied_jobs || [];
       const createdJobs = data.created_jobs || [];
+      const stories = data.stories || [];
 
       const summaryEl = document.getElementById("udProfileSummary");
       if (summaryEl) {
@@ -117,6 +118,25 @@
           </tr>
         `).join("") : `<tr><td colspan="6" class="text-center text-secondary">No activity found</td></tr>`;
       }
+
+      const storiesEl = document.getElementById("udStories");
+      if (storiesEl) {
+        storiesEl.innerHTML = stories.length ? stories.map((s) => `
+          <tr>
+            <td>#${toSafe(s.id)}</td>
+            <td>${toSafe(s.text_content).slice(0, 80)}</td>
+            <td>${s.image_url ? `<a href="${s.image_url}" target="_blank" class="btn btn-sm btn-outline-primary">View</a>` : '<span class="text-secondary small">No image</span>'}</td>
+            <td>${toSafe(s.view_count)}</td>
+            <td>${toSafe(s.created_at)}</td>
+            <td>${toSafe(s.expires_at)}</td>
+            <td class="text-end">
+              <button class="btn btn-outline-info btn-sm" data-kind="story" data-action="view" data-id="${s.id}">View</button>
+              <button class="btn btn-outline-primary btn-sm" data-kind="story" data-action="edit" data-id="${s.id}">Edit</button>
+              <button class="btn btn-outline-danger btn-sm" data-kind="story" data-action="delete" data-id="${s.id}">Delete</button>
+            </td>
+          </tr>
+        `).join("") : `<tr><td colspan="7" class="text-center text-secondary">No stories found</td></tr>`;
+      }
     } catch (err) {
       window.AdminUI.showToast(err.message, "error");
     }
@@ -196,6 +216,33 @@
       if (action === "delete") openDelete("activity", id, `Activity #${id}`);
     });
 
+    document.getElementById("udStories")?.addEventListener("click", async (e) => {
+      const btn = e.target.closest("button[data-action]");
+      if (!btn) return;
+      const id = btn.dataset.id;
+      const action = btn.dataset.action;
+      if (action === "view") {
+        try {
+          const res = await window.API.get(`/api/admin/users/${currentUserId}/stories/${id}`);
+          const d = res.data || {};
+          window.AdminUI.showToast(`Story #${id} · views: ${Number(d.view_count || 0)}`);
+          if (d.image_url) window.open(d.image_url, "_blank");
+        } catch (err) { window.AdminUI.showToast(err.message, "error"); }
+      }
+      if (action === "edit") {
+        try {
+          const res = await window.API.get(`/api/admin/users/${currentUserId}/stories/${id}`);
+          const d = res.data || {};
+          document.getElementById("udStoryEditId").value = d.id || id;
+          document.getElementById("udStoryText").value = d.text_content || "";
+          document.getElementById("udStoryImage").value = d.image_url || "";
+          document.getElementById("udStoryExpires").value = d.expires_at || "";
+          bootstrap.Modal.getOrCreateInstance(document.getElementById("udStoryEditModal")).show();
+        } catch (err) { window.AdminUI.showToast(err.message, "error"); }
+      }
+      if (action === "delete") openDelete("story", id, `Story #${id}`);
+    });
+
     document.getElementById("udAppliedEditForm")?.addEventListener("submit", async (e) => {
       e.preventDefault();
       const id = document.getElementById("udAppliedEditId").value;
@@ -252,6 +299,22 @@
       } catch (err) { window.AdminUI.showToast(err.message, "error"); }
     });
 
+    document.getElementById("udStoryEditForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const id = document.getElementById("udStoryEditId").value;
+      const payload = {
+        text_content: document.getElementById("udStoryText").value.trim(),
+        image_url: document.getElementById("udStoryImage").value.trim(),
+        expires_at: document.getElementById("udStoryExpires").value.trim(),
+      };
+      try {
+        await window.API.put(`/api/admin/users/${currentUserId}/stories/${id}`, payload);
+        bootstrap.Modal.getOrCreateInstance(document.getElementById("udStoryEditModal")).hide();
+        window.AdminUI.showToast("Story updated");
+        loadUserFull();
+      } catch (err) { window.AdminUI.showToast(err.message, "error"); }
+    });
+
     document.getElementById("udConfirmDelete")?.addEventListener("click", async () => {
       if (!pendingDelete) return;
       const { kind, id } = pendingDelete;
@@ -259,6 +322,7 @@
         if (kind === "applied") await window.API.delete(`/api/admin/users/${currentUserId}/applied-jobs/${id}`);
         if (kind === "created") await window.API.delete(`/api/admin/users/${currentUserId}/created-jobs/${id}`);
         if (kind === "activity") await window.API.delete(`/api/admin/users/${currentUserId}/activity/${id}`);
+        if (kind === "story") await window.API.delete(`/api/admin/users/${currentUserId}/stories/${id}`);
         bootstrap.Modal.getOrCreateInstance(document.getElementById("udDeleteModal")).hide();
         window.AdminUI.showToast("Deleted successfully");
         pendingDelete = null;

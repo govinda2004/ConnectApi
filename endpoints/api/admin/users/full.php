@@ -68,11 +68,24 @@ $createdStmt = $db->prepare('
 $createdStmt->execute([$id]);
 $createdJobs = $createdStmt->fetchAll();
 
+// Stories created by this user
+$storiesStmt = $db->prepare('
+    SELECT s.id, s.text_content, s.image_url, s.created_at, s.expires_at,
+           (SELECT COUNT(*) FROM story_views sv WHERE sv.story_id = s.id) AS view_count
+    FROM stories s
+    WHERE s.user_id = ?
+    ORDER BY s.created_at DESC
+    LIMIT 200
+');
+$storiesStmt->execute([$id]);
+$stories = $storiesStmt->fetchAll();
+
 // Summary/actions
 $summary = [
     'activity_count' => count($activity),
     'applied_jobs_count' => count($appliedJobs),
     'created_jobs_count' => count($createdJobs),
+    'stories_count' => count($stories),
 ];
 
 jsonSuccess([
@@ -80,5 +93,6 @@ jsonSuccess([
     'activity' => $activity,
     'applied_jobs' => $appliedJobs,
     'created_jobs' => $createdJobs,
+    'stories' => $stories,
     'summary' => $summary,
 ], 'User full details fetched');
