@@ -55,7 +55,7 @@
       body.innerHTML = "";
       rows.forEach((u) => {
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${u.id}</td><td>${u.name || "-"}</td><td>${u.email || "-"}</td><td><span class="badge ${u.status === "active" ? "text-bg-success" : "text-bg-secondary"}">${u.status || "unknown"}</span></td><td>${u.created_at || "-"}</td><td class="text-end"><button class="btn btn-outline-primary" data-action="view" data-id="${u.id}">View</button> <button class="btn btn-outline-info" data-action="activity" data-id="${u.id}">Activity</button> <button class="btn btn-outline-warning" data-action="toggle" data-id="${u.id}" data-status="${u.status || ""}">${u.status === "active" ? "Deactivate" : "Activate"}</button> <button class="btn btn-outline-danger" data-action="delete" data-id="${u.id}">Delete</button></td>`;
+        tr.innerHTML = `<td>${u.id}</td><td>${u.name || "-"}</td><td>${u.email || "-"}</td><td><span class="badge ${u.status === "active" ? "text-bg-success" : "text-bg-secondary"}">${u.status || "unknown"}</span></td><td>${u.created_at || "-"}</td><td class="text-end"><button class="btn btn-outline-primary" data-action="view" data-id="${u.id}">Full View</button> <button class="btn btn-outline-secondary" data-action="edit" data-id="${u.id}">Edit</button> <button class="btn btn-outline-info" data-action="activity" data-id="${u.id}">Activity</button> <button class="btn btn-outline-warning" data-action="toggle" data-id="${u.id}" data-status="${u.status || ""}">${u.status === "active" ? "Deactivate" : "Activate"}</button> <button class="btn btn-outline-danger" data-action="delete" data-id="${u.id}">Delete</button></td>`;
         body.appendChild(tr);
       });
       ui.setEmpty("usersEmpty", rows.length === 0);
@@ -93,9 +93,25 @@
       const id = btn.dataset.id;
       try {
         if (action === "view") {
-          const detail = await window.API.get(`/api/admin/users/${id}`);
-          renderUserDetailCard(detail.data || detail || {});
-          bootstrap.Modal.getOrCreateInstance(document.getElementById("userDetailModal")).show();
+          window.location.href = `user_detail.html?id=${id}`;
+        }
+        if (action === "edit") {
+          const [detailRes, fullRes] = await Promise.all([
+            window.API.get(`/api/admin/users/${id}`),
+            window.API.get(`/api/admin/users/${id}/full`),
+          ]);
+          const d = detailRes.data || detailRes || {};
+          const profile = fullRes.data?.profile || {};
+          document.getElementById("editUserId").value = d.id || id;
+          document.getElementById("editUserName").value = d.name || "";
+          document.getElementById("editUserEmail").value = d.email || "";
+          document.getElementById("editUserPhone").value = d.phone || profile.contact_no || "";
+          document.getElementById("editUserAccountType").value = d.account_type || profile.account_type || "";
+          document.getElementById("editUserActive").value = String((d.status || "active") === "active" ? 1 : 0);
+          document.getElementById("editUserLocation").value = profile.location || "";
+          document.getElementById("editUserHeadline").value = profile.headline || "";
+          document.getElementById("editUserAbout").value = profile.about || "";
+          bootstrap.Modal.getOrCreateInstance(document.getElementById("userEditModal")).show();
         }
         if (action === "activity") {
           const activity = await window.API.get(`/api/admin/users/${id}/activity`);
@@ -120,6 +136,28 @@
           window.AdminUI.showToast("User deleted");
           loadUsers();
         }
+      } catch (err) {
+        window.AdminUI.showToast(err.message, "error");
+      }
+    });
+    document.getElementById("userEditForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const id = document.getElementById("editUserId").value;
+      const payload = {
+        name: document.getElementById("editUserName").value.trim(),
+        email: document.getElementById("editUserEmail").value.trim(),
+        phone: document.getElementById("editUserPhone").value.trim(),
+        account_type: document.getElementById("editUserAccountType").value,
+        is_active: Number(document.getElementById("editUserActive").value || 1),
+        location: document.getElementById("editUserLocation").value.trim(),
+        headline: document.getElementById("editUserHeadline").value.trim(),
+        about: document.getElementById("editUserAbout").value.trim(),
+      };
+      try {
+        await window.API.put(`/api/admin/users/${id}`, payload);
+        bootstrap.Modal.getOrCreateInstance(document.getElementById("userEditModal")).hide();
+        window.AdminUI.showToast("User updated successfully");
+        loadUsers();
       } catch (err) {
         window.AdminUI.showToast(err.message, "error");
       }

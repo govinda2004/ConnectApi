@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en" data-page="users">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>User Full View</title>
+  <link rel="stylesheet" href="assets/vendor/bootstrap/bootstrap.min.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="users">
+  <div class="app-shell">
+    <aside id="sidebarContainer"></aside>
+    <div class="app-main">
+      <header id="headerContainer"></header>
+      <main class="container-fluid py-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+          <h1 class="h4 page-title mb-0">User Full Profile View</h1>
+          <a href="users.html" class="btn btn-outline-secondary btn-sm">Back to Users</a>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-xl-4">
+            <div class="card h-100">
+              <div class="card-header"><strong>Profile Summary</strong></div>
+              <div class="card-body" id="udProfileSummary"></div>
+            </div>
+          </div>
+          <div class="col-12 col-xl-8">
+            <div class="card h-100">
+              <div class="card-header"><strong>Profile Details</strong></div>
+              <div class="card-body">
+                <div id="udProfileDetails" class="small"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-lg-4">
+            <div class="card h-100"><div class="card-body"><div class="text-secondary small">Activity Count</div><h3 id="udActivityCount">0</h3></div></div>
+          </div>
+          <div class="col-12 col-lg-4">
+            <div class="card h-100"><div class="card-body"><div class="text-secondary small">Applied Jobs</div><h3 id="udAppliedCount">0</h3></div></div>
+          </div>
+          <div class="col-12 col-lg-4">
+            <div class="card h-100"><div class="card-body"><div class="text-secondary small">Created Jobs</div><h3 id="udCreatedCount">0</h3></div></div>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-xl-6">
+            <div class="card h-100">
+              <div class="card-header"><strong>Jobs Applied By User</strong></div>
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle">
+                    <thead><tr><th>Job</th><th>Company</th><th>Status</th><th>Applied At</th></tr></thead>
+                    <tbody id="udAppliedJobs"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-xl-6">
+            <div class="card h-100">
+              <div class="card-header"><strong>Jobs Created By User</strong></div>
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle">
+                    <thead><tr><th>Job</th><th>Company</th><th>Applications</th><th>Created</th></tr></thead>
+                    <tbody id="udCreatedJobs"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><strong>User Actions & Activity Timeline</strong></div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead><tr><th>Time</th><th>Action</th><th>Actor</th><th>Receiver</th><th>Message</th></tr></thead>
+                <tbody id="udActivity"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/user_detail.js"></script>
+</body>
+</html>

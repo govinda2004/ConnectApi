@@ -94,6 +94,29 @@
   <div class="modal fade" id="userActivityModal">
     <div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">User Activity</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><ul id="userActivityList" class="list-group"></ul></div></div></div>
   </div>
+  <div class="modal fade" id="userEditModal">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">Edit User</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+        <form id="userEditForm">
+          <div class="modal-body">
+            <input type="hidden" id="editUserId">
+            <div class="row g-3">
+              <div class="col-md-6"><label class="form-label">Name</label><input id="editUserName" class="form-control"></div>
+              <div class="col-md-6"><label class="form-label">Email</label><input id="editUserEmail" type="email" class="form-control"></div>
+              <div class="col-md-6"><label class="form-label">Phone</label><input id="editUserPhone" class="form-control"></div>
+              <div class="col-md-6"><label class="form-label">Account Type</label><select id="editUserAccountType" class="form-select"><option value="">No change</option><option value="normal">normal</option><option value="organization">organization</option></select></div>
+              <div class="col-md-6"><label class="form-label">Status</label><select id="editUserActive" class="form-select"><option value="1">active</option><option value="0">inactive</option></select></div>
+              <div class="col-md-6"><label class="form-label">Location</label><input id="editUserLocation" class="form-control"></div>
+              <div class="col-md-12"><label class="form-label">Headline</label><input id="editUserHeadline" class="form-control"></div>
+              <div class="col-md-12"><label class="form-label">About</label><textarea id="editUserAbout" rows="3" class="form-control"></textarea></div>
+            </div>
+          </div>
+          <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button><button class="btn btn-primary" type="submit">Save User</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
 
   <script src="assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
   <script src="assets/js/api.js"></script>

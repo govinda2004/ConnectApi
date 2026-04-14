@@ -40,6 +40,11 @@ if (preg_match('#^api/admin/users/(\d+)$#', $route, $m) === 1) {
     }
     exit;
 }
+if (preg_match('#^api/admin/users/(\d+)/full$#', $route, $m) === 1) {
+    $_GET['id'] = $m[1];
+    require_once __DIR__ . '/endpoints/api/admin/users/full.php';
+    exit;
+}
 if (preg_match('#^api/admin/users/(\d+)/activity$#', $route, $m) === 1) {
     $_GET['id'] = $m[1];
     require_once __DIR__ . '/endpoints/api/admin/users/activity.php';

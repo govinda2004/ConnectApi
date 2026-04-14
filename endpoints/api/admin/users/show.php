@@ -2,16 +2,70 @@
 
 require_once __DIR__ . '/_users_common.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    jsonError('Method not allowed', 405);
-}
-
 adminRequireAuth();
 $db = getDB();
 ensureUsersIsActiveColumn($db);
 
 $id = (int)($_GET['id'] ?? 0);
 if ($id <= 0) jsonError('Invalid user id');
+
+if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+    $input = json_decode(file_get_contents('php://input'), true) ?: [];
+
+    $name = trim((string)($input['name'] ?? ''));
+    $email = trim((string)($input['email'] ?? ''));
+    $accountType = trim((string)($input['account_type'] ?? ''));
+    $isActiveRaw = $input['is_active'] ?? null;
+    $phone = trim((string)($input['phone'] ?? ''));
+    $headline = trim((string)($input['headline'] ?? ''));
+    $location = trim((string)($input['location'] ?? ''));
+    $about = trim((string)($input['about'] ?? ''));
+
+    $updates = [];
+    $vals = [];
+    if ($name !== '') { $updates[] = 'name = ?'; $vals[] = $name; }
+    if ($email !== '') { $updates[] = 'email = ?'; $vals[] = $email; }
+    if (in_array($accountType, ['normal', 'organization'], true)) {
+        $updates[] = 'account_type = ?'; $vals[] = $accountType;
+    }
+    if ($isActiveRaw !== null) {
+        $updates[] = 'is_active = ?'; $vals[] = ((int)$isActiveRaw === 1 ? 1 : 0);
+    }
+
+    if (!empty($updates)) {
+        $vals[] = $id;
+        $sql = 'UPDATE users SET ' . implode(', ', $updates) . ' WHERE id = ?';
+        $stmt = $db->prepare($sql);
+        $stmt->execute($vals);
+    }
+
+    // Profiles optional update.
+    $shouldProfileUpdate = ($phone !== '' || $headline !== '' || $location !== '' || $about !== '');
+    if ($shouldProfileUpdate) {
+        $check = $db->prepare('SELECT user_id FROM profiles WHERE user_id = ? LIMIT 1');
+        $check->execute([$id]);
+        $has = (bool)$check->fetch();
+        if (!$has) {
+            $ins = $db->prepare('INSERT INTO profiles (user_id, contact_no, headline, location, about) VALUES (?, ?, ?, ?, ?)');
+            $ins->execute([$id, $phone !== '' ? $phone : null, $headline !== '' ? $headline : null, $location !== '' ? $location : null, $about !== '' ? $about : null]);
+        } else {
+            $pUpdates = [];
+            $pVals = [];
+            if ($phone !== '') { $pUpdates[] = 'contact_no = ?'; $pVals[] = $phone; }
+            if ($headline !== '') { $pUpdates[] = 'headline = ?'; $pVals[] = $headline; }
+            if ($location !== '') { $pUpdates[] = 'location = ?'; $pVals[] = $location; }
+            if ($about !== '') { $pUpdates[] = 'about = ?'; $pVals[] = $about; }
+            if (!empty($pUpdates)) {
+                $pVals[] = $id;
+                $pSql = 'UPDATE profiles SET ' . implode(', ', $pUpdates) . ' WHERE user_id = ?';
+                $pStmt = $db->prepare($pSql);
+                $pStmt->execute($pVals);
+            }
+        }
+    }
+
+    jsonSuccess(['id' => $id], 'User updated');
+}
 
 $hasAccountType = false;
 try {
