@@ -71,6 +71,7 @@ $sql = "
     {$whereSql}
     ORDER BY n.id DESC
     LIMIT ? OFFSET ?
+";
 $stmt = $db->prepare($sql);
 $i = 1;
 foreach ($params as $p) $stmt->bindValue($i++, $p, PDO::PARAM_STR);
