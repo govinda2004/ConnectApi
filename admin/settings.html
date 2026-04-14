@@ -1,1 +1,145 @@
-<!doctype html><html lang="en" data-page="settings"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Settings</title><link rel="stylesheet" href="assets/vendor/bootstrap/bootstrap.min.css"><link rel="stylesheet" href="assets/css/style.css"></head><body data-page="settings"><div class="app-shell"><aside id="sidebarContainer"></aside><div class="app-main"><header id="headerContainer"></header><main class="container-fluid py-4"><h1 class="h4 mb-3">Settings</h1><div class="row g-3"><div class="col-lg-6"><div class="card"><div class="card-header">Update Profile</div><div class="card-body"><form id="profileForm"><div class="mb-3"><label class="form-label">Name</label><input id="profileName" class="form-control" required></div><div class="mb-3"><label class="form-label">Email</label><input id="profileEmail" type="email" class="form-control" required></div><button class="btn btn-primary" type="submit">Save</button></form></div></div></div><div class="col-lg-6"><div class="card"><div class="card-header">Change Password</div><div class="card-body"><form id="passwordForm"><div class="mb-3"><label class="form-label">Current Password</label><input id="currentPassword" type="password" class="form-control" required></div><div class="mb-3"><label class="form-label">New Password</label><input id="newPassword" type="password" class="form-control" required></div><button class="btn btn-warning" type="submit">Change</button></form></div></div></div><div class="col-12"><div class="card"><div class="card-header">App Settings</div><div class="card-body"><form id="appSettingsForm" class="row g-3"><div class="col-md-4"><label class="form-label">Maintenance</label><select id="maintenanceMode" class="form-select"><option value="false">Disabled</option><option value="true">Enabled</option></select></div><div class="col-md-4"><label class="form-label">Registration</label><select id="registrationEnabled" class="form-select"><option value="true">Enabled</option><option value="false">Disabled</option></select></div><div class="col-md-4"><label class="form-label">Items/Page</label><input id="defaultPageSize" type="number" class="form-control" value="20"></div><div class="col-12"><button class="btn btn-success" type="submit">Save App Settings</button></div></form></div></div></div></div></main></div></div><script src="assets/vendor/bootstrap/bootstrap.bundle.min.js"></script><script src="assets/js/api.js"></script><script src="assets/js/auth.js"></script><script src="assets/js/main.js"></script></body></html>
+<!doctype html>
+<html lang="en" data-page="settings">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Settings</title>
+  <link rel="stylesheet" href="assets/vendor/bootstrap/bootstrap.min.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="settings">
+  <div class="app-shell">
+    <aside id="sidebarContainer"></aside>
+    <div class="app-main">
+      <header id="headerContainer"></header>
+      <main class="container-fluid py-4">
+        <h1 class="h4 mb-3">Settings</h1>
+
+        <div class="row g-3">
+          <div class="col-lg-6">
+            <div class="card">
+              <div class="card-header">Update Profile</div>
+              <div class="card-body">
+                <form id="profileForm">
+                  <div class="mb-3">
+                    <label class="form-label">Name</label>
+                    <input id="profileName" class="form-control" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input id="profileEmail" type="email" class="form-control" required>
+                  </div>
+                  <button class="btn btn-primary" type="submit">Save</button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-6">
+            <div class="card">
+              <div class="card-header">Change Password</div>
+              <div class="card-body">
+                <form id="passwordForm">
+                  <div class="mb-3">
+                    <label class="form-label">Current Password</label>
+                    <input id="currentPassword" type="password" class="form-control" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">New Password</label>
+                    <input id="newPassword" type="password" class="form-control" required>
+                  </div>
+                  <button class="btn btn-warning" type="submit">Change</button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">App Settings</div>
+              <div class="card-body">
+                <form id="appSettingsForm" class="row g-3">
+                  <div class="col-md-4">
+                    <label class="form-label">Maintenance</label>
+                    <select id="maintenanceMode" class="form-select">
+                      <option value="false">Disabled</option>
+                      <option value="true">Enabled</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Registration</label>
+                    <select id="registrationEnabled" class="form-select">
+                      <option value="true">Enabled</option>
+                      <option value="false">Disabled</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Default page size</label>
+                    <input id="defaultPageSize" type="number" min="1" class="form-control" value="20">
+                  </div>
+                  <div class="col-12">
+                    <button class="btn btn-success" type="submit">Save App Settings</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">App HTML Content (Dynamic)</div>
+              <div class="card-body">
+                <form id="appContentForm" class="row g-3">
+                  <div class="col-12">
+                    <label class="form-label">Terms &amp; Conditions Title</label>
+                    <input id="termsTitle" class="form-control" value="Terms & Conditions">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label">Terms &amp; Conditions HTML</label>
+                    <textarea id="termsHtml" class="form-control" rows="8"></textarea>
+                  </div>
+
+                  <div class="col-12">
+                    <label class="form-label">About Title</label>
+                    <input id="aboutTitle" class="form-control" value="About ConnectIn">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label">About HTML</label>
+                    <textarea id="aboutHtml" class="form-control" rows="8"></textarea>
+                  </div>
+
+                  <div class="col-12">
+                    <label class="form-label">Help &amp; Support Title</label>
+                    <input id="helpTitle" class="form-control" value="Help & Support">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label">Help &amp; Support HTML</label>
+                    <textarea id="helpHtml" class="form-control" rows="8"></textarea>
+                  </div>
+
+                  <div class="col-12">
+                    <button class="btn btn-primary" type="submit">Save HTML Content</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="alert alert-info mb-0">
+              To review and take action on Feedback / Reports / Blocks, open the
+              <strong>Data</strong> page and select <code>feedbacks</code>,
+              <code>reports</code>, or <code>blocks</code>.
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

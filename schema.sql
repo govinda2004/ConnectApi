@@ -221,6 +221,31 @@ CREATE TABLE IF NOT EXISTS reports (
   INDEX idx_status (status)
 );
 
+-- App static/dynamic HTML content (terms/about/help)
+CREATE TABLE IF NOT EXISTS app_contents (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  content_key VARCHAR(64) NOT NULL UNIQUE,
+  title VARCHAR(255) NOT NULL,
+  html_content MEDIUMTEXT NOT NULL,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- User feedback submitted from app
+CREATE TABLE IF NOT EXISTS feedbacks (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  subject VARCHAR(255) NULL,
+  message TEXT NOT NULL,
+  status ENUM('new','in_progress','resolved','rejected') DEFAULT 'new',
+  admin_note TEXT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_user (user_id),
+  INDEX idx_status (status)
+);
+
 -- Save posts
 CREATE TABLE IF NOT EXISTS saved_posts (
   id INT AUTO_INCREMENT PRIMARY KEY,

@@ -197,6 +197,8 @@ $endpoints = [
     // Export & Activity
     'export_job_applicants'  => 'endpoints/export_job_applicants.php',
     'get_user_activity'      => 'endpoints/get_user_activity.php',
+    'get_app_settings'       => 'endpoints/get_app_settings.php',
+    'submit_feedback'        => 'endpoints/submit_feedback.php',
 
     // Setup (run once)
     'setup_db'               => 'endpoints/setup_db.php',

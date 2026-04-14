@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/_common.php';
+require_once __DIR__ . '/../../../helpers/migrations.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'PUT') {
     jsonError('Method not allowed', 405);
@@ -8,6 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'PUT') {
 
 adminRequireAuth();
 $db = getDB();
+ensureAppContentsTable($db);
 
 try {
     $db->exec('CREATE TABLE IF NOT EXISTS app_settings (
@@ -30,6 +32,26 @@ $stmt = $db->prepare('INSERT INTO app_settings (`key`, `value`) VALUES (?, ?) ON
 foreach ($map as $k => $v) {
     if ($v === null) continue;
     $stmt->execute([$k, $v]);
+}
+
+$contentPayload = $input['app_contents'] ?? null;
+if (is_array($contentPayload)) {
+    $upsert = $db->prepare(
+        'INSERT INTO app_contents (content_key, title, html_content, is_active)
+         VALUES (?, ?, ?, 1)
+         ON DUPLICATE KEY UPDATE
+           title = VALUES(title),
+           html_content = VALUES(html_content),
+           is_active = 1'
+    );
+    foreach ($contentPayload as $key => $row) {
+        if (!is_string($key) || !preg_match('/^[a-z_]+$/', $key)) continue;
+        if (!is_array($row)) continue;
+        $title = trim((string)($row['title'] ?? ''));
+        $html = (string)($row['html_content'] ?? '');
+        if ($title === '' || $html === '') continue;
+        $upsert->execute([$key, $title, $html]);
+    }
 }
 
 jsonSuccess($map, 'Settings saved');

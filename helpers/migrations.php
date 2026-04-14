@@ -85,3 +85,83 @@ function ensureNotificationsBroadcastBatchColumn(PDO $db): void {
         }
     }
 }
+
+function ensureAppContentsTable(PDO $db): void {
+    static $checked = false;
+    if ($checked) return;
+    $checked = true;
+
+    try {
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS app_contents (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                content_key VARCHAR(64) NOT NULL UNIQUE,
+                title VARCHAR(255) NOT NULL,
+                html_content MEDIUMTEXT NOT NULL,
+                is_active TINYINT(1) NOT NULL DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )
+        ");
+        ensureDefaultAppContentsRecords($db);
+    } catch (Throwable $e) {
+        // Best-effort guard; endpoint should still run with defaults.
+    }
+}
+
+function ensureDefaultAppContentsRecords(PDO $db): void {
+    $defaults = [
+        'terms_conditions' => [
+            'title' => 'Terms & Conditions',
+            'html_content' => '<h2>Terms & Conditions</h2><p>By using ConnectIn, you agree to our terms of service. We respect your privacy and protect your data according to applicable laws.</p>',
+        ],
+        'about' => [
+            'title' => 'About ConnectIn',
+            'html_content' => '<h2>About ConnectIn</h2><p>ConnectIn is a professional networking platform that helps you build meaningful connections, discover opportunities, and grow your career.</p><p><strong>Version:</strong> 1.0.0</p>',
+        ],
+        'help_support' => [
+            'title' => 'Help & Support',
+            'html_content' => '<h2>Help & Support</h2><p>Need help? Contact us at <a href="mailto:support@connectin.app">support@connectin.app</a></p><h4>FAQ</h4><ul><li>How to connect with people?</li><li>How to create a post?</li><li>How to update my profile?</li></ul>',
+        ],
+    ];
+
+    try {
+        $stmt = $db->prepare(
+            'INSERT INTO app_contents (content_key, title, html_content, is_active)
+             VALUES (?, ?, ?, 1)
+             ON DUPLICATE KEY UPDATE
+               title = IF(title IS NULL OR title = "", VALUES(title), title),
+               html_content = IF(html_content IS NULL OR html_content = "", VALUES(html_content), html_content)'
+        );
+        foreach ($defaults as $key => $row) {
+            $stmt->execute([$key, $row['title'], $row['html_content']]);
+        }
+    } catch (Throwable $e) {
+        // Best-effort seeding.
+    }
+}
+
+function ensureFeedbacksTable(PDO $db): void {
+    static $checked = false;
+    if ($checked) return;
+    $checked = true;
+
+    try {
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS feedbacks (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                subject VARCHAR(255) NULL,
+                message TEXT NOT NULL,
+                status ENUM('new','in_progress','resolved','rejected') DEFAULT 'new',
+                admin_note TEXT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_user (user_id),
+                INDEX idx_status (status)
+            )
+        ");
+    } catch (Throwable $e) {
+        // Best-effort guard.
+    }
+}

@@ -94,6 +94,26 @@
       const profile = (await window.API.get("/api/admin/profile")).data || {};
       document.getElementById("profileName").value = profile.name || "";
       document.getElementById("profileEmail").value = profile.email || "";
+
+      // Load editable HTML content for app settings pages.
+      const contentRes = await window.API.get("/api/admin/data/app_contents", { limit: 100 });
+      const items = contentRes.data?.items || [];
+      const byKey = {};
+      (Array.isArray(items) ? items : []).forEach((x) => {
+        if (x && x.content_key) byKey[String(x.content_key)] = x;
+      });
+      if (byKey.terms_conditions) {
+        document.getElementById("termsTitle").value = byKey.terms_conditions.title || "Terms & Conditions";
+        document.getElementById("termsHtml").value = byKey.terms_conditions.html_content || "";
+      }
+      if (byKey.about) {
+        document.getElementById("aboutTitle").value = byKey.about.title || "About ConnectIn";
+        document.getElementById("aboutHtml").value = byKey.about.html_content || "";
+      }
+      if (byKey.help_support) {
+        document.getElementById("helpTitle").value = byKey.help_support.title || "Help & Support";
+        document.getElementById("helpHtml").value = byKey.help_support.html_content || "";
+      }
     } catch (e) { showToast(e.message, "error"); }
 
     document.getElementById("profileForm")?.addEventListener("submit", async (e) => {
@@ -122,6 +142,31 @@
         });
         showToast("Settings updated");
       } catch (err) { showToast(err.message, "error"); }
+    });
+
+    document.getElementById("appContentForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      try {
+        await window.API.put("/api/admin/settings", {
+          app_contents: {
+            terms_conditions: {
+              title: document.getElementById("termsTitle").value.trim(),
+              html_content: document.getElementById("termsHtml").value,
+            },
+            about: {
+              title: document.getElementById("aboutTitle").value.trim(),
+              html_content: document.getElementById("aboutHtml").value,
+            },
+            help_support: {
+              title: document.getElementById("helpTitle").value.trim(),
+              html_content: document.getElementById("helpHtml").value,
+            },
+          },
+        });
+        showToast("App HTML content updated");
+      } catch (err) {
+        showToast(err.message, "error");
+      }
     });
   }
 
