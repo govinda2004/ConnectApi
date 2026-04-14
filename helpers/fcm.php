@@ -90,7 +90,8 @@ function sendFcmToDeviceToken(
     string $title,
     string $body,
     array $data = [],
-    ?array &$meta = null
+    ?array &$meta = null,
+    ?string $imageUrl = null
 ): bool {
     $meta = [
         'function_hit' => true,
@@ -146,6 +147,9 @@ function sendFcmToDeviceToken(
             ],
         ],
     ];
+    if (is_string($imageUrl) && trim($imageUrl) !== '') {
+        $payload['message']['notification']['image'] = trim($imageUrl);
+    }
 
     $url = 'https://fcm.googleapis.com/v1/projects/' . rawurlencode($projectId) . '/messages:send';
     $ch = curl_init($url);

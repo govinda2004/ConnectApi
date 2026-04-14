@@ -10,14 +10,50 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $admin = adminRequireAuth();
 $db = getDB();
+ensureFcmTokenColumn($db);
+ensureNotificationsImageColumn($db);
 
-$input = json_decode(file_get_contents('php://input'), true) ?: [];
+$isMultipart = isset($_SERVER['CONTENT_TYPE']) && stripos((string)$_SERVER['CONTENT_TYPE'], 'multipart/form-data') !== false;
+$input = $isMultipart ? $_POST : (json_decode(file_get_contents('php://input'), true) ?: []);
+
 $mode = trim((string)($input['mode'] ?? 'single')); // single | all
 $userId = (int)($input['user_id'] ?? 0);
 $title = trim((string)($input['title'] ?? 'Admin Notice'));
 $message = trim((string)($input['message'] ?? ''));
+$imageUrl = trim((string)($input['image_url'] ?? ''));
 
 if ($message === '') jsonError('message is required');
+
+$uploadedImageUrl = null;
+if ($isMultipart && isset($_FILES['image']) && is_array($_FILES['image']) && ($_FILES['image']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+    if (($_FILES['image']['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
+        jsonError('Image upload failed');
+    }
+    $tmp = $_FILES['image']['tmp_name'] ?? '';
+    $orig = $_FILES['image']['name'] ?? 'image';
+    $size = (int)($_FILES['image']['size'] ?? 0);
+    if ($tmp === '' || !is_uploaded_file($tmp)) jsonError('Invalid uploaded file');
+    if ($size > 5 * 1024 * 1024) jsonError('Image size must be <= 5MB');
+
+    $ext = strtolower(pathinfo((string)$orig, PATHINFO_EXTENSION));
+    $allowed = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+    if (!in_array($ext, $allowed, true)) jsonError('Only jpg, jpeg, png, webp, gif images are allowed');
+
+    $dirRel = '/uploads/admin_notifications';
+    $dirAbs = dirname(__DIR__, 4) . $dirRel;
+    if (!is_dir($dirAbs) && !mkdir($dirAbs, 0777, true) && !is_dir($dirAbs)) {
+        jsonError('Unable to create upload directory', 500);
+    }
+    $file = 'notice_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+    $dest = $dirAbs . '/' . $file;
+    if (!move_uploaded_file($tmp, $dest)) jsonError('Unable to store uploaded image', 500);
+
+    $scheme = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http');
+    $host = $_SERVER['HTTP_X_FORWARDED_HOST'] ?? ($_SERVER['HTTP_HOST'] ?? '');
+    $base = rtrim((string)(getenv('APP_BASE_URL') ?: ($scheme . '://' . $host)), '/');
+    $uploadedImageUrl = $base . $dirRel . '/' . $file;
+}
+if ($uploadedImageUrl !== null) $imageUrl = $uploadedImageUrl;
 
 $targetUsers = [];
 if ($mode === 'all') {
@@ -46,11 +82,9 @@ if (empty($targetUsers)) {
     jsonSuccess(['sent_count' => 0], 'No target users found');
 }
 
-ensureFcmTokenColumn($db);
-
 $ins = $db->prepare('
-    INSERT INTO notifications (user_id, type, actor_id, target_id, message, is_read, created_at)
-    VALUES (?, ?, ?, NULL, ?, 0, NOW())
+    INSERT INTO notifications (user_id, type, actor_id, target_id, message, image_url, is_read, created_at)
+    VALUES (?, ?, ?, NULL, ?, ?, 0, NOW())
 ');
 
 $sent = 0;
@@ -64,7 +98,7 @@ foreach ($targetUsers as $tu) {
     $pushToken = trim((string)($tu['push_token'] ?? ''));
     $receiverName = trim((string)($tu['name'] ?? ''));
 
-    $ins->execute([$uid, $title, (int)$admin['id'], $message]);
+    $ins->execute([$uid, 'admin_notice', (int)$admin['id'], $message, ($imageUrl !== '' ? $imageUrl : null)]);
     $sent++;
 
     if ($pushToken === '') {
@@ -90,8 +124,10 @@ foreach ($targetUsers as $tu) {
             'receiver_id' => (string)$uid,
             'receiver_name' => (string)$receiverName,
             'mode' => (string)$mode,
+            'image_url' => (string)$imageUrl,
         ],
-        $meta
+        $meta,
+        $imageUrl !== '' ? $imageUrl : null
     );
     if ($ok) {
         $pushSent++;
@@ -128,6 +164,7 @@ jsonSuccess([
     'push_sent' => $pushSent,
     'push_failed' => $pushFailed,
     'push_skipped' => $pushSkipped,
+    'image_url' => ($imageUrl !== '' ? $imageUrl : null),
     'failures' => array_slice($failures, 0, 10),
 ], $pushFailed > 0 || $pushSkipped > 0
     ? "Notification sent to {$sent} users, push success {$pushSent}, failed {$pushFailed}, skipped {$pushSkipped}"
