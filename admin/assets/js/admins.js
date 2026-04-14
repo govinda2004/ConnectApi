@@ -1,6 +1,20 @@
 (function () {
   const modalEl = () => document.getElementById("adminModal");
   const modal = () => bootstrap.Modal.getOrCreateInstance(modalEl());
+  let pendingDeleteAdminId = null;
+
+  function getSelectedPermissions() {
+    const sel = document.getElementById("adminPermissions");
+    if (!sel) return [];
+    return Array.from(sel.selectedOptions).map((o) => o.value).filter(Boolean);
+  }
+
+  function setSelectedPermissions(values) {
+    const set = new Set(Array.isArray(values) ? values : []);
+    const sel = document.getElementById("adminPermissions");
+    if (!sel) return;
+    Array.from(sel.options).forEach((o) => { o.selected = set.has(o.value); });
+  }
 
   async function loadAdmins() {
     const ui = window.AdminUI;
@@ -31,6 +45,7 @@
       document.getElementById("adminForm").reset();
       document.getElementById("adminId").value = "";
       document.getElementById("adminModalTitle").textContent = "Add Admin";
+      setSelectedPermissions([]);
       modal().show();
     });
 
@@ -44,14 +59,18 @@
         document.getElementById("adminId").value = a.id || "";
         document.getElementById("adminName").value = a.name || "";
         document.getElementById("adminEmail").value = a.email || "";
+        document.getElementById("adminPassword").value = "";
         document.getElementById("adminRole").value = a.role || "";
-        document.getElementById("adminPermissions").value = Array.isArray(a.permissions) ? a.permissions.join(",") : (a.permissions || "");
+        setSelectedPermissions(Array.isArray(a.permissions) ? a.permissions : []);
         document.getElementById("adminModalTitle").textContent = "Edit Admin";
         modal().show();
       }
       if (action === "delete") {
-        if (!confirm("Delete this admin?")) return;
-        try { await window.API.delete(`/api/admin/admins/${id}`); window.AdminUI.showToast("Admin deleted"); loadAdmins(); } catch (err) { window.AdminUI.showToast(err.message, "error"); }
+        pendingDeleteAdminId = id;
+        const row = btn.closest("tr");
+        const p = document.getElementById("adminDeletePreview");
+        if (p) p.textContent = row ? row.innerText.replace(/\s+/g, " ").slice(0, 220) : `Admin #${id}`;
+        bootstrap.Modal.getOrCreateInstance(document.getElementById("adminDeleteModal")).show();
       }
     });
 
@@ -61,14 +80,28 @@
       const payload = {
         name: document.getElementById("adminName").value.trim(),
         email: document.getElementById("adminEmail").value.trim(),
+        password: document.getElementById("adminPassword").value,
         role: document.getElementById("adminRole").value.trim(),
-        permissions: document.getElementById("adminPermissions").value.split(",").map((x) => x.trim()).filter(Boolean),
+        permissions: getSelectedPermissions(),
       };
       try {
         if (id) await window.API.put(`/api/admin/admins/${id}`, payload);
         else await window.API.post("/api/admin/admins", payload);
         window.AdminUI.showToast(`Admin ${id ? "updated" : "added"}`);
         modal().hide();
+        loadAdmins();
+      } catch (err) {
+        window.AdminUI.showToast(err.message, "error");
+      }
+    });
+
+    document.getElementById("confirmDeleteAdmin")?.addEventListener("click", async () => {
+      if (!pendingDeleteAdminId) return;
+      try {
+        await window.API.delete(`/api/admin/admins/${pendingDeleteAdminId}`);
+        bootstrap.Modal.getOrCreateInstance(document.getElementById("adminDeleteModal")).hide();
+        window.AdminUI.showToast("Admin deleted");
+        pendingDeleteAdminId = null;
         loadAdmins();
       } catch (err) {
         window.AdminUI.showToast(err.message, "error");

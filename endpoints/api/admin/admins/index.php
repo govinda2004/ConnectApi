@@ -30,14 +30,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($email === '') jsonError('email is required');
     if ($role === '') $role = 'admin';
 
-    // Create user if not present and password provided.
+    // Create/update linked user profile so name edit reflects.
     $userStmt = $db->prepare('SELECT id FROM users WHERE email = ? LIMIT 1');
     $userStmt->execute([$email]);
     $user = $userStmt->fetch();
-    if (!$user && $name !== '' && isset($input['password'])) {
-        $pwdHash = password_hash((string)$input['password'], PASSWORD_BCRYPT);
+    if (!$user) {
+        $pwd = trim((string)($input['password'] ?? ''));
+        if ($pwd === '') {
+            jsonError('password is required for new admin user');
+        }
+        $pwdHash = password_hash($pwd, PASSWORD_BCRYPT);
         $ins = $db->prepare('INSERT INTO users (name, email, password) VALUES (?, ?, ?)');
         $ins->execute([$name, $email, $pwdHash]);
+    } elseif ($name !== '') {
+        $upd = $db->prepare('UPDATE users SET name = ? WHERE email = ?');
+        $upd->execute([$name, $email]);
     }
 
     $stmt = $db->prepare('
