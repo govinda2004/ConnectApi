@@ -45,6 +45,24 @@ if (preg_match('#^api/admin/users/(\d+)/full$#', $route, $m) === 1) {
     require_once __DIR__ . '/endpoints/api/admin/users/full.php';
     exit;
 }
+if (preg_match('#^api/admin/users/(\d+)/applied-jobs/(\d+)$#', $route, $m) === 1) {
+    $_GET['id'] = $m[1];
+    $_GET['application_id'] = $m[2];
+    require_once __DIR__ . '/endpoints/api/admin/users/applied_job_item.php';
+    exit;
+}
+if (preg_match('#^api/admin/users/(\d+)/created-jobs/(\d+)$#', $route, $m) === 1) {
+    $_GET['id'] = $m[1];
+    $_GET['job_id'] = $m[2];
+    require_once __DIR__ . '/endpoints/api/admin/users/created_job_item.php';
+    exit;
+}
+if (preg_match('#^api/admin/users/(\d+)/activity/(\d+)$#', $route, $m) === 1) {
+    $_GET['id'] = $m[1];
+    $_GET['activity_id'] = $m[2];
+    require_once __DIR__ . '/endpoints/api/admin/users/activity_item.php';
+    exit;
+}
 if (preg_match('#^api/admin/users/(\d+)/activity$#', $route, $m) === 1) {
     $_GET['id'] = $m[1];
     require_once __DIR__ . '/endpoints/api/admin/users/activity.php';

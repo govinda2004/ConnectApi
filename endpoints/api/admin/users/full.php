@@ -45,7 +45,7 @@ $activity = $activityStmt->fetchAll();
 
 // Jobs applied by this user
 $appliedStmt = $db->prepare('
-    SELECT ja.id, ja.job_id, ja.status, ja.created_at AS applied_at, ja.full_name, ja.email, ja.phone,
+    SELECT ja.id, ja.job_id, ja.status, ja.created_at AS applied_at, ja.full_name, ja.email, ja.phone, ja.cover_letter, ja.resume_url, ja.salary_expectation,
            j.title, j.company, j.location, j.job_type, j.user_id AS job_owner_id
     FROM job_applications ja
     INNER JOIN jobs j ON j.id = ja.job_id
@@ -58,7 +58,7 @@ $appliedJobs = $appliedStmt->fetchAll();
 
 // Jobs created by this user
 $createdStmt = $db->prepare('
-    SELECT j.id, j.title, j.company, j.location, j.job_type, j.created_at,
+    SELECT j.id, j.title, j.company, j.location, j.job_type, j.salary_min, j.salary_max, j.description, j.skills, j.is_remote, j.is_easy_apply, j.created_at,
            (SELECT COUNT(*) FROM job_applications ja WHERE ja.job_id = j.id) AS applications_count
     FROM jobs j
     WHERE j.user_id = ?
