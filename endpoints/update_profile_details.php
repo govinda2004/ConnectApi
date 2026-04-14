@@ -18,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $userId = requireAuth();
 $db = getDB();
 ensureAccountTypeColumn($db);
+ensureProfilesWebsiteColumn($db);
 
 // Parse JSON body
 $input = json_decode(file_get_contents('php://input'), true);
@@ -44,7 +45,7 @@ if (isset($input['account_type'])) {
 // Update profile fields
 $profileFields = [];
 $profileValues = [];
-foreach (['headline', 'location', 'about', 'contact_no'] as $field) {
+foreach (['headline', 'location', 'about', 'contact_no', 'website'] as $field) {
     if (isset($input[$field])) {
         $profileFields[] = "$field = ?";
         $profileValues[] = $input[$field];
@@ -52,6 +53,7 @@ foreach (['headline', 'location', 'about', 'contact_no'] as $field) {
 }
 
 if (!empty($profileFields)) {
+    $db->prepare('INSERT IGNORE INTO profiles (user_id) VALUES (?)')->execute([$userId]);
     $profileValues[] = $userId;
     $sql = 'UPDATE profiles SET ' . implode(', ', $profileFields) . ' WHERE user_id = ?';
     $db->prepare($sql)->execute($profileValues);

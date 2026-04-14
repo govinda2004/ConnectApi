@@ -165,3 +165,23 @@ function ensureFeedbacksTable(PDO $db): void {
         // Best-effort guard.
     }
 }
+
+function ensureProfilesWebsiteColumn(PDO $db): void {
+    static $checked = false;
+    if ($checked) return;
+    $checked = true;
+
+    try {
+        $db->exec("ALTER TABLE profiles ADD COLUMN IF NOT EXISTS website VARCHAR(500) NULL AFTER contact_no");
+    } catch (Throwable $e) {
+        try {
+            $stmt = $db->query("SHOW COLUMNS FROM profiles LIKE 'website'");
+            $exists = $stmt !== false && $stmt->fetch() !== false;
+            if (!$exists) {
+                $db->exec("ALTER TABLE profiles ADD COLUMN website VARCHAR(500) NULL AFTER contact_no");
+            }
+        } catch (Throwable $inner) {
+            // Best-effort migration guard.
+        }
+    }
+}

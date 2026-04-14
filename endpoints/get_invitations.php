@@ -19,7 +19,7 @@ $db = getDB();
 // Received invitations (pending)
 $stmt = $db->prepare('
     SELECT c.id AS connection_id, c.sender_id AS user_id, c.status, c.created_at AS sent_at,
-           u.name, u.email, pr.profile_image AS image, pr.headline AS role,
+           u.name, u.email, u.account_type, pr.profile_image AS image, pr.headline AS role,
            pr.location, pr.about AS bio
     FROM connections c
     JOIN users u ON c.sender_id = u.id
@@ -33,7 +33,7 @@ $received = $stmt->fetchAll();
 // Sent invitations (pending)
 $stmt = $db->prepare('
     SELECT c.id AS connection_id, c.receiver_id AS user_id, c.status, c.created_at AS sent_at,
-           u.name, u.email, pr.profile_image AS image, pr.headline AS role,
+           u.name, u.email, u.account_type, pr.profile_image AS image, pr.headline AS role,
            pr.location, pr.about AS bio
     FROM connections c
     JOIN users u ON c.receiver_id = u.id
@@ -46,7 +46,7 @@ $sent = $stmt->fetchAll();
 
 // Suggested connections (users not yet connected)
 $stmt = $db->prepare('
-    SELECT u.id AS user_id, u.name, u.email,
+    SELECT u.id AS user_id, u.name, u.email, u.account_type,
            pr.profile_image AS image, pr.headline AS role, pr.location, pr.about AS bio
     FROM users u
     LEFT JOIN profiles pr ON u.id = pr.user_id

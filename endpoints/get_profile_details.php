@@ -18,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 $loggedInUserId = requireAuth();
 $db = getDB();
 ensureAccountTypeColumn($db);
+ensureProfilesWebsiteColumn($db);
 
 // If user_id param provided, show that user's profile; otherwise show own
 $targetUserId = isset($_GET['user_id']) && !empty($_GET['user_id'])
@@ -81,6 +82,7 @@ $data = [
         'headline'       => $profile['headline'] ?? null,
         'location'       => $profile['location'] ?? null,
         'about'          => $profile['about'] ?? null,
+        'website'        => $profile['website'] ?? null,
         'created_at'     => $profile['created_at'] ?? null,
         'updated_at'     => $profile['updated_at'] ?? null,
     ],
