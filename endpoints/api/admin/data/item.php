@@ -23,6 +23,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
 if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     $input = json_decode(file_get_contents('php://input'), true) ?: [];
     unset($input[$cfg['id']]);
+    if ($resource === 'users') {
+        unset($input['password'], $input['firebase_uid'], $input['device_token'], $input['fcm_token']);
+    }
     if (empty($input)) jsonError('No fields to update');
 
     $sets = [];

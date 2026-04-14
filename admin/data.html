@@ -63,6 +63,38 @@
     </div>
   </div>
 
+  <div class="modal fade" id="dataViewModal">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">User Full Details & Activity</h5>
+          <button class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-12 col-lg-6">
+              <div class="card h-100">
+                <div class="card-header"><strong>Profile Details</strong></div>
+                <div class="card-body">
+                  <div id="dataViewLoading" class="d-none text-center py-3"><div class="spinner-border"></div></div>
+                  <div id="dataViewDetails" class="small"></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-lg-6">
+              <div class="card h-100">
+                <div class="card-header"><strong>Recent Activity</strong></div>
+                <div class="card-body">
+                  <ul id="dataViewActivity" class="list-group list-group-flush"></ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
   <script src="assets/js/api.js"></script>
   <script src="assets/js/auth.js"></script>

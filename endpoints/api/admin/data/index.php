@@ -40,5 +40,10 @@ if ($resource === 'admins') {
         $it['permissions'] = normalizePermissions($it['permissions'] ?? null);
     }
 }
+if ($resource === 'users') {
+    foreach ($items as &$it) {
+        unset($it['password'], $it['firebase_uid'], $it['device_token'], $it['fcm_token']);
+    }
+}
 
 jsonSuccess(['items' => $items], 'Data fetched');

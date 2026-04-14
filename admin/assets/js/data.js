@@ -1,5 +1,68 @@
 (function () {
   let resource = "users";
+  const USERS_HIDDEN_FIELDS = ["password", "firebase_uid", "device_token", "fcm_token"];
+
+  function formatValue(value) {
+    if (value === null || value === undefined) return "";
+    if (typeof value === "object") return JSON.stringify(value);
+    return String(value);
+  }
+
+  function getVisibleKeys(rows) {
+    if (!rows.length) return [];
+    const keys = Object.keys(rows[0]);
+    if (resource !== "users") return keys;
+    return keys.filter((k) => !USERS_HIDDEN_FIELDS.includes(k));
+  }
+
+  function renderUserDetails(details) {
+    const box = document.getElementById("dataViewDetails");
+    if (!box) return;
+    const entries = Object.entries(details || {});
+    box.innerHTML = entries.map(([k, v]) => `
+      <div class="d-flex justify-content-between border-bottom py-2 gap-3">
+        <div class="text-secondary">${k}</div>
+        <div class="text-end fw-semibold">${formatValue(v) || "-"}</div>
+      </div>
+    `).join("");
+  }
+
+  function renderUserActivity(items) {
+    const list = document.getElementById("dataViewActivity");
+    if (!list) return;
+    if (!items.length) {
+      list.innerHTML = `<li class="list-group-item text-secondary">No recent activity found.</li>`;
+      return;
+    }
+    list.innerHTML = items.map((x) => `
+      <li class="list-group-item">
+        <div class="small text-secondary">${x.created_at || "-"}</div>
+        <div class="fw-semibold">${x.action || x.event || "-"}</div>
+        <div class="small">${x.event || x.message || ""}</div>
+      </li>
+    `).join("");
+  }
+
+  async function openUserView(userId) {
+    const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById("dataViewModal"));
+    document.getElementById("dataViewLoading")?.classList.remove("d-none");
+    document.getElementById("dataViewDetails").innerHTML = "";
+    document.getElementById("dataViewActivity").innerHTML = "";
+    modal.show();
+    try {
+      const [detailRes, activityRes] = await Promise.all([
+        window.API.get(`/api/admin/users/${userId}`),
+        window.API.get(`/api/admin/users/${userId}/activity`),
+      ]);
+      renderUserDetails(detailRes.data || detailRes || {});
+      const items = activityRes.data?.items || activityRes.data || [];
+      renderUserActivity(Array.isArray(items) ? items : []);
+    } catch (err) {
+      window.AdminUI.showToast(err.message, "error");
+    } finally {
+      document.getElementById("dataViewLoading")?.classList.add("d-none");
+    }
+  }
 
   function buildTable(rows) {
     const head = document.getElementById("dataHead");
@@ -8,13 +71,14 @@
     body.innerHTML = "";
     if (!rows.length) return;
 
-    const keys = Object.keys(rows[0]);
+    const keys = getVisibleKeys(rows);
     head.innerHTML = `<tr>${keys.map((k) => `<th>${k}</th>`).join("")}<th class="text-end">Actions</th></tr>`;
     rows.forEach((r) => {
       const id = r.id ?? r._id ?? "";
       const tr = document.createElement("tr");
       tr.dataset.row = JSON.stringify(r);
-      tr.innerHTML = `${keys.map((k) => `<td>${typeof r[k] === "object" ? JSON.stringify(r[k]) : (r[k] ?? "")}</td>`).join("")}<td class="text-end"><button class="btn btn-outline-primary" data-action="edit" data-id="${id}">Edit</button> <button class="btn btn-outline-danger" data-action="delete" data-id="${id}">Delete</button></td>`;
+      const viewBtn = resource === "users" ? `<button class="btn btn-outline-info" data-action="view" data-id="${id}">View</button> ` : "";
+      tr.innerHTML = `${keys.map((k) => `<td>${formatValue(r[k])}</td>`).join("")}<td class="text-end">${viewBtn}<button class="btn btn-outline-primary" data-action="edit" data-id="${id}">Edit</button> <button class="btn btn-outline-danger" data-action="delete" data-id="${id}">Delete</button></td>`;
       body.appendChild(tr);
     });
   }
@@ -46,6 +110,10 @@
       const action = btn.dataset.action;
       const id = btn.dataset.id;
       const row = JSON.parse(btn.closest("tr").dataset.row || "{}");
+      if (action === "view" && resource === "users") {
+        openUserView(id);
+        return;
+      }
       if (action === "edit") {
         document.getElementById("dataRecordId").value = row.id ?? row._id ?? "";
         document.getElementById("dataRecordJson").value = JSON.stringify(row, null, 2);
