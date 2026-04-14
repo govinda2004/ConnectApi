@@ -43,7 +43,7 @@ $count = $db->prepare("SELECT COUNT(*) FROM notifications n LEFT JOIN users u ON
 $count->execute($params);
 $total = (int)$count->fetchColumn();
 
-$sql = "SELECT n.created_at, COALESCE(u.name, 'System') AS actor_name, 'user' AS actor_type, n.type AS action, n.message, n.target_id
+$sql = "SELECT n.id, n.created_at, COALESCE(u.name, 'System') AS actor_name, u.email AS actor_email, 'user' AS actor_type, n.type AS action, n.message, n.target_id
         FROM notifications n
         LEFT JOIN users u ON u.id = n.actor_id
         {$whereSql}

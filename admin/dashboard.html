@@ -14,36 +14,61 @@
       <header id="headerContainer"></header>
       <main class="container-fluid py-4">
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-          <h1 class="h4 page-title mb-0">Dashboard Overview</h1>
+          <h1 class="h4 page-title mb-0">Super Admin Analytics Dashboard</h1>
           <button id="refreshDashboard" class="btn btn-sm btn-outline-primary">Refresh Data</button>
         </div>
 
-        <div class="row g-3 mb-3">
+        <div class="row g-3 mb-4">
           <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card stat-card"><div class="card-body"><div class="text-secondary small">Total Users</div><h3 id="statUsers">--</h3></div></div>
+            <div class="card stat-card kpi-card kpi-users"><div class="card-body"><div class="text-secondary small">Total Users</div><h3 id="statUsers">--</h3><div class="small text-secondary">Platform reach</div></div></div>
           </div>
           <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card stat-card"><div class="card-body"><div class="text-secondary small">Total Admins</div><h3 id="statAdmins">--</h3></div></div>
+            <div class="card stat-card kpi-card kpi-admins"><div class="card-body"><div class="text-secondary small">Total Admins</div><h3 id="statAdmins">--</h3><div class="small text-secondary">Control users</div></div></div>
           </div>
           <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card stat-card"><div class="card-body"><div class="text-secondary small">Active Users</div><h3 id="statActive">--</h3></div></div>
+            <div class="card stat-card kpi-card kpi-active"><div class="card-body"><div class="text-secondary small">Active Users</div><h3 id="statActive">--</h3><div class="small text-secondary">Live sessions</div></div></div>
           </div>
           <div class="col-12 col-sm-6 col-xl-3">
-            <div class="card stat-card"><div class="card-body"><div class="text-secondary small">Total Records</div><h3 id="statRecords">--</h3></div></div>
+            <div class="card stat-card kpi-card kpi-records"><div class="card-body"><div class="text-secondary small">Total Records</div><h3 id="statRecords">--</h3><div class="small text-secondary">System data volume</div></div></div>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+          <div class="col-12 col-xl-8">
+            <div class="card h-100">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>System Growth Snapshot</strong>
+                <span class="badge text-bg-primary">Live</span>
+              </div>
+              <div class="card-body">
+                <canvas id="statsBarChart" height="110"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-xl-4">
+            <div class="card h-100">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>Activity Mix</strong>
+                <span class="badge text-bg-info">Top actions</span>
+              </div>
+              <div class="card-body">
+                <canvas id="activityDonutChart" height="220"></canvas>
+              </div>
+            </div>
           </div>
         </div>
 
         <div class="card">
           <div class="card-header d-flex justify-content-between align-items-center">
-            <strong>Recent Activity</strong>
-            <a href="activity.html" class="btn btn-sm btn-outline-secondary">View All</a>
+            <strong>Recent Activity Control Table</strong>
+            <a href="activity.html" class="btn btn-sm btn-outline-secondary">Open Full Activity Center</a>
           </div>
           <div class="card-body">
             <div id="dashboardLoading" class="d-none text-center py-3"><div class="spinner-border"></div></div>
             <div id="dashboardEmpty" class="d-none text-secondary py-3 text-center">No recent activity.</div>
             <div class="table-responsive">
-              <table class="table table-hover align-middle">
-                <thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Target</th></tr></thead>
+              <table class="table table-hover align-middle dashboard-activity-table">
+                <thead><tr><th>ID</th><th>Time</th><th>Actor</th><th>Action</th><th>Message</th><th class="text-end">Access</th></tr></thead>
                 <tbody id="recentActivityBody"></tbody>
               </table>
             </div>
@@ -53,7 +78,50 @@
     </div>
   </div>
 
+  <div class="modal fade" id="activityViewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Activity Details</h5>
+          <button class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <pre id="activityViewJson" class="json-box mb-0"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="activityEditModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Activity</h5>
+          <button class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="activityEditForm">
+          <div class="modal-body">
+            <input type="hidden" id="editActivityId">
+            <div class="mb-3">
+              <label class="form-label">Action</label>
+              <input id="editActivityAction" class="form-control" required>
+            </div>
+            <div class="mb-0">
+              <label class="form-label">Message</label>
+              <textarea id="editActivityMessage" class="form-control" rows="4"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
+            <button class="btn btn-primary" type="submit">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <script src="assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <script src="assets/js/api.js"></script>
   <script src="assets/js/auth.js"></script>
   <script src="assets/js/main.js"></script>

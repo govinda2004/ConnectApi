@@ -63,6 +63,11 @@ if ($route === 'api/admin/activity/logs') {
     require_once __DIR__ . '/endpoints/api/admin/activity/logs.php';
     exit;
 }
+if (preg_match('#^api/admin/activity/(\d+)$#', $route, $m) === 1) {
+    $_GET['id'] = $m[1];
+    require_once __DIR__ . '/endpoints/api/admin/activity/item.php';
+    exit;
+}
 if (preg_match('#^api/admin/data/([a-z_]+)$#', $route, $m) === 1) {
     $_GET['resource'] = $m[1];
     require_once __DIR__ . '/endpoints/api/admin/data/index.php';

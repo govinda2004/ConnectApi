@@ -80,6 +80,29 @@ body.sidebar-collapsed .app-main {
   margin-bottom: 0;
 }
 
+.kpi-card {
+  overflow: hidden;
+  position: relative;
+}
+
+.kpi-card::after {
+  content: "";
+  position: absolute;
+  right: -22px;
+  top: -22px;
+  width: 90px;
+  height: 90px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .22);
+}
+
+.kpi-users { background: linear-gradient(135deg, #dbeafe, #eff6ff); }
+.kpi-admins { background: linear-gradient(135deg, #ede9fe, #f5f3ff); }
+.kpi-active { background: linear-gradient(135deg, #d1fae5, #ecfdf5); }
+.kpi-records { background: linear-gradient(135deg, #fef3c7, #fffbeb); }
+
+.dashboard-activity-table td .btn { margin-left: .2rem; }
+
 .json-box {
   background: #0d1117;
   color: #c9d1d9;
