@@ -17,7 +17,7 @@
         <tr>
           <td>#${toSafe(x.id)}</td>
           <td>${toSafe(x.created_at)}</td>
-          <td>${toSafe(x.receiver_name)}<div class="small text-secondary">${toSafe(x.receiver_email)}</div></td>
+          <td>${toSafe(x.receiver_name)}<div class="small text-secondary">${toSafe(x.receiver_email)}${x.recipient_count && Number(x.recipient_count) > 1 ? ` · recipients: ${x.recipient_count}` : ""}</div></td>
           <td><span class="badge text-bg-primary">${toSafe(x.type)}</span></td>
           <td>${toSafe(x.message)}</td>
           <td>${x.image_url ? `<a href="${x.image_url}" target="_blank" class="btn btn-sm btn-outline-primary">View</a>` : '<span class="text-secondary small">No image</span>'}</td>
@@ -147,6 +147,10 @@
         if (action === "resend") {
           const res = await window.API.post(`/api/admin/notifications/${id}/resend`, {});
           window.AdminUI.showToast(res.message || "Notification resent");
+          const d = res.data || {};
+          if ((d.push_failed || 0) > 0 || (d.push_skipped || 0) > 0) {
+            window.AdminUI.showToast(`Push issue: failed=${d.push_failed || 0}, skipped=${d.push_skipped || 0}`, "warning");
+          }
           loadAdminNotices();
         }
         if (action === "delete") {

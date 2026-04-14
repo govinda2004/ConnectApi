@@ -12,6 +12,7 @@ $admin = adminRequireAuth();
 $db = getDB();
 ensureFcmTokenColumn($db);
 ensureNotificationsImageColumn($db);
+ensureNotificationsBroadcastBatchColumn($db);
 
 $isMultipart = isset($_SERVER['CONTENT_TYPE']) && stripos((string)$_SERVER['CONTENT_TYPE'], 'multipart/form-data') !== false;
 $input = $isMultipart ? $_POST : (json_decode(file_get_contents('php://input'), true) ?: []);
@@ -83,9 +84,10 @@ if (empty($targetUsers)) {
 }
 
 $ins = $db->prepare('
-    INSERT INTO notifications (user_id, type, actor_id, target_id, message, image_url, is_read, created_at)
-    VALUES (?, ?, ?, NULL, ?, ?, 0, NOW())
+    INSERT INTO notifications (user_id, type, actor_id, target_id, message, image_url, broadcast_batch_id, is_read, created_at)
+    VALUES (?, ?, ?, NULL, ?, ?, ?, 0, NOW())
 ');
+$broadcastBatchId = ($mode === 'all') ? ('batch_' . time() . '_' . bin2hex(random_bytes(4))) : null;
 
 $sent = 0;
 $pushSent = 0;
@@ -98,7 +100,7 @@ foreach ($targetUsers as $tu) {
     $pushToken = trim((string)($tu['push_token'] ?? ''));
     $receiverName = trim((string)($tu['name'] ?? ''));
 
-    $ins->execute([$uid, 'admin_notice', (int)$admin['id'], $message, ($imageUrl !== '' ? $imageUrl : null)]);
+    $ins->execute([$uid, 'admin_notice', (int)$admin['id'], $message, ($imageUrl !== '' ? $imageUrl : null), $broadcastBatchId]);
     $sent++;
 
     if ($pushToken === '') {
@@ -161,6 +163,8 @@ if ($mode === 'single' && $pushSent === 0) {
 jsonSuccess([
     'sent_count' => $sent,
     'mode' => $mode,
+    'broadcast_batch_id' => $broadcastBatchId,
+    'logical_entries' => $mode === 'all' ? 1 : $sent,
     'push_sent' => $pushSent,
     'push_failed' => $pushFailed,
     'push_skipped' => $pushSkipped,

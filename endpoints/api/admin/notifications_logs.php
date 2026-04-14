@@ -10,6 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 adminRequireAuth();
 $db = getDB();
 ensureNotificationsImageColumn($db);
+ensureNotificationsBroadcastBatchColumn($db);
 
 $page = max(1, (int)($_GET['page'] ?? 1));
 $limit = max(1, min(100, (int)($_GET['limit'] ?? 20)));
@@ -48,21 +49,8 @@ if ($to !== '') {
 }
 $whereSql = 'WHERE ' . implode(' AND ', $where);
 
-$countSql = "
-    SELECT COUNT(*)
-    FROM notifications n
-    LEFT JOIN users au ON au.id = n.actor_id
-    LEFT JOIN users uu ON uu.id = n.user_id
-    {$whereSql}
-";
-$countStmt = $db->prepare($countSql);
-$i = 1;
-foreach ($params as $p) $countStmt->bindValue($i++, $p, PDO::PARAM_STR);
-$countStmt->execute();
-$total = (int)$countStmt->fetchColumn();
-
 $sql = "
-    SELECT n.id, n.created_at, n.user_id, n.actor_id, n.type, n.message, n.image_url,
+    SELECT n.id, n.created_at, n.user_id, n.actor_id, n.type, n.message, n.image_url, n.broadcast_batch_id,
            au.name AS actor_name, au.email AS actor_email,
            uu.name AS receiver_name, uu.email AS receiver_email
     FROM notifications n
@@ -70,15 +58,43 @@ $sql = "
     LEFT JOIN users uu ON uu.id = n.user_id
     {$whereSql}
     ORDER BY n.id DESC
-    LIMIT ? OFFSET ?
 ";
 $stmt = $db->prepare($sql);
 $i = 1;
 foreach ($params as $p) $stmt->bindValue($i++, $p, PDO::PARAM_STR);
-$stmt->bindValue($i++, $limit, PDO::PARAM_INT);
-$stmt->bindValue($i++, $offset, PDO::PARAM_INT);
 $stmt->execute();
-$items = $stmt->fetchAll();
+$raw = $stmt->fetchAll();
+
+// Collapse broadcast rows into a single logical row per batch for admin list UI.
+$groups = [];
+foreach ($raw as $r) {
+    $batch = trim((string)($r['broadcast_batch_id'] ?? ''));
+    $key = $batch !== '' ? ('B:' . $batch) : ('S:' . (string)$r['id']);
+    if (!isset($groups[$key])) {
+        $groups[$key] = $r;
+        if ($batch !== '') {
+            $groups[$key]['receiver_name'] = 'All Users';
+            $groups[$key]['receiver_email'] = '-';
+            $groups[$key]['recipient_count'] = 0;
+        } else {
+            $groups[$key]['recipient_count'] = 1;
+        }
+    }
+    if ($batch !== '') {
+        $groups[$key]['recipient_count']++;
+        if ((int)$r['id'] > (int)$groups[$key]['id']) {
+            // Keep latest row id/time for actions and ordering.
+            $groups[$key]['id'] = $r['id'];
+            $groups[$key]['created_at'] = $r['created_at'];
+        }
+    }
+}
+$itemsAll = array_values($groups);
+usort($itemsAll, static function ($a, $b) {
+    return (int)$b['id'] <=> (int)$a['id'];
+});
+$total = count($itemsAll);
+$items = array_slice($itemsAll, $offset, $limit);
 
 jsonSuccess([
     'items' => $items,

@@ -65,3 +65,23 @@ function ensureNotificationsImageColumn(PDO $db): void {
         }
     }
 }
+
+function ensureNotificationsBroadcastBatchColumn(PDO $db): void {
+    static $checked = false;
+    if ($checked) return;
+    $checked = true;
+
+    try {
+        $db->exec("ALTER TABLE notifications ADD COLUMN IF NOT EXISTS broadcast_batch_id VARCHAR(64) NULL AFTER image_url");
+    } catch (Throwable $e) {
+        try {
+            $stmt = $db->query("SHOW COLUMNS FROM notifications LIKE 'broadcast_batch_id'");
+            $exists = $stmt !== false && $stmt->fetch() !== false;
+            if (!$exists) {
+                $db->exec("ALTER TABLE notifications ADD COLUMN broadcast_batch_id VARCHAR(64) NULL AFTER image_url");
+            }
+        } catch (Throwable $inner) {
+            // Best-effort migration guard; endpoints should continue to run.
+        }
+    }
+}
