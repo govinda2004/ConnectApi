@@ -1,5 +1,62 @@
 <!doctype html>
 <html lang="en" data-page="dashboard">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Dashboard</title><link rel="stylesheet" href="assets/vendor/bootstrap/bootstrap.min.css"><link rel="stylesheet" href="assets/css/style.css"></head>
-<body data-page="dashboard"><div class="app-shell"><aside id="sidebarContainer"></aside><div class="app-main"><header id="headerContainer"></header><main class="container-fluid py-4"><div class="d-flex justify-content-between mb-3"><h1 class="h4">Dashboard</h1><button id="refreshDashboard" class="btn btn-sm btn-outline-primary">Refresh</button></div><div class="row g-3 mb-3"><div class="col-md-3"><div class="card"><div class="card-body"><small>Total Users</small><h3 id="statUsers">--</h3></div></div></div><div class="col-md-3"><div class="card"><div class="card-body"><small>Total Admins</small><h3 id="statAdmins">--</h3></div></div></div><div class="col-md-3"><div class="card"><div class="card-body"><small>Active Users</small><h3 id="statActive">--</h3></div></div></div><div class="col-md-3"><div class="card"><div class="card-body"><small>Total Records</small><h3 id="statRecords">--</h3></div></div></div></div><div class="card"><div class="card-header">Recent Activity</div><div class="card-body"><div id="dashboardLoading" class="d-none text-center py-3"><div class="spinner-border"></div></div><div id="dashboardEmpty" class="d-none text-secondary py-3 text-center">No data</div><div class="table-responsive"><table class="table"><thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Target</th></tr></thead><tbody id="recentActivityBody"></tbody></table></div></div></div></main></div></div><script src="assets/vendor/bootstrap/bootstrap.bundle.min.js"></script><script src="assets/js/api.js"></script><script src="assets/js/auth.js"></script><script src="assets/js/main.js"></script><script src="assets/js/dashboard.js"></script></body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="assets/vendor/bootstrap/bootstrap.min.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="dashboard">
+  <div class="app-shell">
+    <aside id="sidebarContainer"></aside>
+    <div class="app-main">
+      <header id="headerContainer"></header>
+      <main class="container-fluid py-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+          <h1 class="h4 page-title mb-0">Dashboard Overview</h1>
+          <button id="refreshDashboard" class="btn btn-sm btn-outline-primary">Refresh Data</button>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card stat-card"><div class="card-body"><div class="text-secondary small">Total Users</div><h3 id="statUsers">--</h3></div></div>
+          </div>
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card stat-card"><div class="card-body"><div class="text-secondary small">Total Admins</div><h3 id="statAdmins">--</h3></div></div>
+          </div>
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card stat-card"><div class="card-body"><div class="text-secondary small">Active Users</div><h3 id="statActive">--</h3></div></div>
+          </div>
+          <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card stat-card"><div class="card-body"><div class="text-secondary small">Total Records</div><h3 id="statRecords">--</h3></div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <strong>Recent Activity</strong>
+            <a href="activity.html" class="btn btn-sm btn-outline-secondary">View All</a>
+          </div>
+          <div class="card-body">
+            <div id="dashboardLoading" class="d-none text-center py-3"><div class="spinner-border"></div></div>
+            <div id="dashboardEmpty" class="d-none text-secondary py-3 text-center">No recent activity.</div>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Target</th></tr></thead>
+                <tbody id="recentActivityBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/dashboard.js"></script>
+</body>
 </html>

@@ -1,1 +1,96 @@
-<!doctype html><html lang="en" data-page="activity"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Activity</title><link rel="stylesheet" href="assets/vendor/bootstrap/bootstrap.min.css"><link rel="stylesheet" href="assets/css/style.css"></head><body data-page="activity"><div class="app-shell"><aside id="sidebarContainer"></aside><div class="app-main"><header id="headerContainer"></header><main class="container-fluid py-4"><h1 class="h4 mb-3">Activity Monitoring</h1><div class="card mb-3"><div class="card-body"><div class="row g-2"><div class="col-md-3"><input id="activityUser" class="form-control" placeholder="User"></div><div class="col-md-3"><input id="activityAction" class="form-control" placeholder="Action"></div><div class="col-md-2"><input id="activityFrom" type="date" class="form-control"></div><div class="col-md-2"><input id="activityTo" type="date" class="form-control"></div><div class="col-md-2"><button id="activityFilterBtn" class="btn btn-primary w-100">Apply</button></div></div></div></div><div class="card"><div class="card-body"><div id="activityLoading" class="d-none text-center py-3"><div class="spinner-border"></div></div><div id="activityEmpty" class="d-none text-secondary py-3 text-center">No logs</div><div class="table-responsive"><table class="table"><thead><tr><th>Time</th><th>Actor</th><th>Type</th><th>Action</th><th>Meta</th></tr></thead><tbody id="activityBody"></tbody></table></div><div class="d-flex justify-content-between"><small id="activityPageInfo" class="text-secondary"></small><div class="btn-group"><button id="activityPrev" class="btn btn-sm btn-outline-secondary">Prev</button><button id="activityNext" class="btn btn-sm btn-outline-secondary">Next</button></div></div></div></div></main></div></div><script src="assets/vendor/bootstrap/bootstrap.bundle.min.js"></script><script src="assets/js/api.js"></script><script src="assets/js/auth.js"></script><script src="assets/js/main.js"></script><script src="assets/js/activity.js"></script></body></html>
+<!doctype html>
+<html lang="en" data-page="activity">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Activity & Notifications</title>
+  <link rel="stylesheet" href="assets/vendor/bootstrap/bootstrap.min.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="activity">
+  <div class="app-shell">
+    <aside id="sidebarContainer"></aside>
+    <div class="app-main">
+      <header id="headerContainer"></header>
+      <main class="container-fluid py-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+          <h1 class="h4 page-title mb-0">Activity & Notification Center</h1>
+          <span class="badge text-bg-primary">Broadcast + Audit Logs</span>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-xl-7">
+            <div class="card h-100">
+              <div class="card-header"><strong>Activity Filters</strong></div>
+              <div class="card-body">
+                <div class="row g-2">
+                  <div class="col-md-6"><input id="activityUser" class="form-control" placeholder="User/Admin"></div>
+                  <div class="col-md-6"><input id="activityAction" class="form-control" placeholder="Action type"></div>
+                  <div class="col-md-4"><input id="activityFrom" type="date" class="form-control"></div>
+                  <div class="col-md-4"><input id="activityTo" type="date" class="form-control"></div>
+                  <div class="col-md-4"><button id="activityFilterBtn" class="btn btn-primary w-100">Apply Filters</button></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-xl-5">
+            <div class="card h-100">
+              <div class="card-header"><strong>Send Notification</strong></div>
+              <div class="card-body">
+                <form id="notifyForm" class="row g-2">
+                  <div class="col-12">
+                    <select id="notifyMode" class="form-select">
+                      <option value="single">Send to One User</option>
+                      <option value="all">Broadcast to All Users</option>
+                    </select>
+                  </div>
+                  <div class="col-12" id="notifyUserWrap">
+                    <select id="notifyUserId" class="form-select">
+                      <option value="">Select user</option>
+                    </select>
+                  </div>
+                  <div class="col-12">
+                    <input id="notifyTitle" class="form-control" placeholder="Title" value="Admin Notice">
+                  </div>
+                  <div class="col-12">
+                    <textarea id="notifyMessage" class="form-control" rows="3" placeholder="Write message..."></textarea>
+                  </div>
+                  <div class="col-12 d-grid">
+                    <button class="btn btn-success" type="submit" id="notifySendBtn">Send Notification</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <div id="activityLoading" class="d-none text-center py-3"><div class="spinner-border"></div></div>
+            <div id="activityEmpty" class="d-none text-secondary py-3 text-center">No logs found.</div>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead><tr><th>Time</th><th>Actor</th><th>Type</th><th>Action</th><th>Meta</th></tr></thead>
+                <tbody id="activityBody"></tbody>
+              </table>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+              <small id="activityPageInfo" class="text-secondary"></small>
+              <div class="btn-group">
+                <button id="activityPrev" class="btn btn-sm btn-outline-secondary">Prev</button>
+                <button id="activityNext" class="btn btn-sm btn-outline-secondary">Next</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/activity.js"></script>
+</body>
+</html>

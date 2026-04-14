@@ -1,6 +1,7 @@
 (function () {
   const THEME_KEY = "SUPER_ADMIN_THEME";
   const SIDEBAR_KEY = "SUPER_ADMIN_SIDEBAR";
+  const MOBILE_BP = 992;
 
   function showToast(message, type = "success") {
     let container = document.getElementById("globalToastContainer");
@@ -30,8 +31,21 @@
 
   function applyTheme() { document.body.classList.toggle("theme-dark", (localStorage.getItem(THEME_KEY) || "light") === "dark"); }
   function toggleTheme() { const dark = document.body.classList.toggle("theme-dark"); localStorage.setItem(THEME_KEY, dark ? "dark" : "light"); }
-  function applySidebar() { document.body.classList.toggle("sidebar-collapsed", localStorage.getItem(SIDEBAR_KEY) === "collapsed"); }
-  function toggleSidebar() { const c = document.body.classList.toggle("sidebar-collapsed"); localStorage.setItem(SIDEBAR_KEY, c ? "collapsed" : "expanded"); }
+  function isMobile() { return window.innerWidth < MOBILE_BP; }
+  function applySidebar() {
+    const saved = localStorage.getItem(SIDEBAR_KEY);
+    const collapsed = saved ? saved === "collapsed" : true;
+    document.body.classList.toggle("sidebar-collapsed", collapsed);
+    if (isMobile()) document.body.classList.remove("mobile-sidebar-open");
+  }
+  function toggleSidebar() {
+    if (isMobile()) {
+      document.body.classList.toggle("mobile-sidebar-open");
+      return;
+    }
+    const c = document.body.classList.toggle("sidebar-collapsed");
+    localStorage.setItem(SIDEBAR_KEY, c ? "collapsed" : "expanded");
+  }
 
   function setActiveNav() {
     const page = document.body.dataset.page;
@@ -45,6 +59,22 @@
     const admin = window.Auth.getAdmin();
     const label = document.getElementById("headerAdminName");
     if (label) label.textContent = admin?.name || admin?.email || "Super Admin";
+  }
+
+  function initMobileSidebar() {
+    let backdrop = document.getElementById("sidebarBackdrop");
+    if (!backdrop) {
+      backdrop = document.createElement("div");
+      backdrop.id = "sidebarBackdrop";
+      backdrop.className = "sidebar-backdrop";
+      document.body.appendChild(backdrop);
+    }
+    backdrop.addEventListener("click", () => document.body.classList.remove("mobile-sidebar-open"));
+    document.querySelectorAll("#sidebarNav .nav-link").forEach((a) => {
+      a.addEventListener("click", () => {
+        if (isMobile()) document.body.classList.remove("mobile-sidebar-open");
+      });
+    });
   }
 
   function exportTableToCsv(tableId, fileName = "export.csv") {
@@ -104,7 +134,11 @@
     await loadComponent("headerContainer", "components/header.html");
     setActiveNav();
     initHeader();
+    initMobileSidebar();
     await initSettingsPage();
+    window.addEventListener("resize", () => {
+      if (!isMobile()) document.body.classList.remove("mobile-sidebar-open");
+    });
   }
 
   document.addEventListener("DOMContentLoaded", boot);

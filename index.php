@@ -169,6 +169,7 @@ $endpoints = [
     'api/admin/activity/recent' => 'endpoints/api/admin/activity/recent.php',
     'api/admin/change-password' => 'endpoints/api/admin/change_password.php',
     'api/admin/settings'     => 'endpoints/api/admin/settings.php',
+    'api/admin/notifications/send' => 'endpoints/api/admin/notifications_send.php',
 ];
 
 if (!isset($endpoints[$route])) {

@@ -39,6 +39,49 @@
     });
     document.getElementById("activityPrev")?.addEventListener("click", () => { if (state.page > 1) state.page -= 1; loadActivity(); });
     document.getElementById("activityNext")?.addEventListener("click", () => { state.page += 1; loadActivity(); });
+
+    const modeEl = document.getElementById("notifyMode");
+    const userWrap = document.getElementById("notifyUserWrap");
+    const userSelect = document.getElementById("notifyUserId");
+    const form = document.getElementById("notifyForm");
+
+    const toggleMode = () => {
+      const mode = modeEl?.value || "single";
+      userWrap?.classList.toggle("d-none", mode === "all");
+    };
+
+    modeEl?.addEventListener("change", toggleMode);
+    toggleMode();
+
+    window.API.get("/api/admin/users", { page: 1, limit: 200 }).then((res) => {
+      const users = res.data?.items || [];
+      users.forEach((u) => {
+        const opt = document.createElement("option");
+        opt.value = u.id;
+        opt.textContent = `${u.name || "User"} (${u.email || "-"})`;
+        userSelect?.appendChild(opt);
+      });
+    }).catch(() => {});
+
+    form?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const mode = modeEl?.value || "single";
+      const payload = {
+        mode,
+        title: (document.getElementById("notifyTitle")?.value || "Admin Notice").trim(),
+        message: (document.getElementById("notifyMessage")?.value || "").trim(),
+      };
+      if (mode === "single") payload.user_id = Number(userSelect?.value || 0);
+      try {
+        await window.API.post("/api/admin/notifications/send", payload);
+        window.AdminUI.showToast("Notification sent");
+        document.getElementById("notifyMessage").value = "";
+        loadActivity();
+      } catch (err) {
+        window.AdminUI.showToast(err.message, "error");
+      }
+    });
+
     loadActivity();
   });
 })();
