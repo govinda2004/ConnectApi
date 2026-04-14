@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../_common.php';
-require_once __DIR__ . '/../../../helpers/migrations.php';
+require_once __DIR__ . '/../../../../helpers/migrations.php';
 
 $admin = adminRequireAuth();
 $db = getDB();

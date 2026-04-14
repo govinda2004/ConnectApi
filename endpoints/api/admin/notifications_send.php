@@ -1,8 +1,8 @@
 <?php
 
 require_once __DIR__ . '/_common.php';
-require_once __DIR__ . '/../../../helpers/fcm.php';
-require_once __DIR__ . '/../../../helpers/migrations.php';
+require_once __DIR__ . '/../../../../helpers/fcm.php';
+require_once __DIR__ . '/../../../../helpers/migrations.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonError('Method not allowed', 405);
@@ -40,7 +40,7 @@ if ($isMultipart && isset($_FILES['image']) && is_array($_FILES['image']) && ($_
     if (!in_array($ext, $allowed, true)) jsonError('Only jpg, jpeg, png, webp, gif images are allowed');
 
     $dirRel = '/uploads/admin_notifications';
-    $dirAbs = dirname(__DIR__, 4) . $dirRel;
+    $dirAbs = dirname(__DIR__, 3) . $dirRel;
     if (!is_dir($dirAbs) && !mkdir($dirAbs, 0777, true) && !is_dir($dirAbs)) {
         jsonError('Unable to create upload directory', 500);
     }
