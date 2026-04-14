@@ -65,6 +65,8 @@
 
     form?.addEventListener("submit", async (e) => {
       e.preventDefault();
+      const sendBtn = document.getElementById("notifySendBtn");
+      if (sendBtn) sendBtn.disabled = true;
       const mode = modeEl?.value || "single";
       const payload = {
         mode,
@@ -73,12 +75,18 @@
       };
       if (mode === "single") payload.user_id = Number(userSelect?.value || 0);
       try {
-        await window.API.post("/api/admin/notifications/send", payload);
-        window.AdminUI.showToast("Notification sent");
+        const res = await window.API.post("/api/admin/notifications/send", payload);
+        window.AdminUI.showToast(res.message || "Notification sent");
+        const d = res.data || {};
+        if ((d.push_failed || 0) > 0 || (d.push_skipped || 0) > 0) {
+          window.AdminUI.showToast(`Push issue: failed=${d.push_failed || 0}, skipped=${d.push_skipped || 0}`, "warning");
+        }
         document.getElementById("notifyMessage").value = "";
         loadActivity();
       } catch (err) {
         window.AdminUI.showToast(err.message, "error");
+      } finally {
+        if (sendBtn) sendBtn.disabled = false;
       }
     });
 
