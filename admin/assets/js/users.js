@@ -1,6 +1,7 @@
 (function () {
   const state = { page: 1, limit: 20, search: "", status: "" };
   const toSafe = (v) => (v === null || v === undefined || v === "" ? "-" : String(v));
+  let pendingDeleteUserId = null;
 
   function renderUserDetailCard(user) {
     const status = (user.status || "unknown").toLowerCase();
@@ -131,10 +132,13 @@
           loadUsers();
         }
         if (action === "delete") {
-          if (!confirm("Delete this user?")) return;
-          await window.API.delete(`/api/admin/users/${id}`);
-          window.AdminUI.showToast("User deleted");
-          loadUsers();
+          pendingDeleteUserId = id;
+          const row = btn.closest("tr");
+          const preview = document.getElementById("deleteUserPreview");
+          if (preview) {
+            preview.textContent = row ? row.innerText.replace(/\s+/g, " ").slice(0, 220) : `User #${id}`;
+          }
+          bootstrap.Modal.getOrCreateInstance(document.getElementById("userDeleteModal")).show();
         }
       } catch (err) {
         window.AdminUI.showToast(err.message, "error");
@@ -157,6 +161,18 @@
         await window.API.put(`/api/admin/users/${id}`, payload);
         bootstrap.Modal.getOrCreateInstance(document.getElementById("userEditModal")).hide();
         window.AdminUI.showToast("User updated successfully");
+        loadUsers();
+      } catch (err) {
+        window.AdminUI.showToast(err.message, "error");
+      }
+    });
+    document.getElementById("confirmDeleteUser")?.addEventListener("click", async () => {
+      if (!pendingDeleteUserId) return;
+      try {
+        await window.API.delete(`/api/admin/users/${pendingDeleteUserId}`);
+        bootstrap.Modal.getOrCreateInstance(document.getElementById("userDeleteModal")).hide();
+        window.AdminUI.showToast("User deleted");
+        pendingDeleteUserId = null;
         loadUsers();
       } catch (err) {
         window.AdminUI.showToast(err.message, "error");
