@@ -86,6 +86,16 @@ if ($route === 'api/admin/activity/logs') {
     require_once __DIR__ . '/endpoints/api/admin/activity/logs.php';
     exit;
 }
+if (preg_match('#^api/admin/notifications/(\d+)/resend$#', $route, $m) === 1) {
+    $_GET['id'] = $m[1];
+    require_once __DIR__ . '/endpoints/api/admin/notifications_resend.php';
+    exit;
+}
+if (preg_match('#^api/admin/notifications/(\d+)$#', $route, $m) === 1) {
+    $_GET['id'] = $m[1];
+    require_once __DIR__ . '/endpoints/api/admin/notifications_item.php';
+    exit;
+}
 if (preg_match('#^api/admin/activity/(\d+)$#', $route, $m) === 1) {
     $_GET['id'] = $m[1];
     require_once __DIR__ . '/endpoints/api/admin/activity/item.php';
