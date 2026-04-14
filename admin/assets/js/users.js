@@ -1,5 +1,47 @@
 (function () {
   const state = { page: 1, limit: 20, search: "", status: "" };
+  const toSafe = (v) => (v === null || v === undefined || v === "" ? "-" : String(v));
+
+  function renderUserDetailCard(user) {
+    const status = (user.status || "unknown").toLowerCase();
+    const statusClass = status === "active" ? "text-bg-success" : "text-bg-secondary";
+    const name = toSafe(user.name);
+    const email = toSafe(user.email);
+    const avatar = (name && name !== "-" ? name[0] : "U").toUpperCase();
+
+    const avatarEl = document.getElementById("userDetailAvatar");
+    const nameEl = document.getElementById("userDetailName");
+    const emailEl = document.getElementById("userDetailEmail");
+    const statusEl = document.getElementById("userDetailStatus");
+    const contentEl = document.getElementById("userDetailContent");
+
+    if (avatarEl) avatarEl.textContent = avatar;
+    if (nameEl) nameEl.textContent = name;
+    if (emailEl) emailEl.textContent = email;
+    if (statusEl) {
+      statusEl.className = `badge ${statusClass}`;
+      statusEl.textContent = status;
+    }
+
+    const fields = [
+      ["User ID", user.id],
+      ["Name", user.name],
+      ["Email", user.email],
+      ["Phone", user.phone],
+      ["Account Type", user.account_type],
+      ["Created At", user.created_at],
+      ["Status", user.status],
+      ["is_active", user.is_active],
+    ];
+    if (contentEl) {
+      contentEl.innerHTML = fields.map(([k, v]) => `
+        <div class="d-flex justify-content-between border-bottom py-2 gap-3">
+          <div class="text-secondary">${k}</div>
+          <div class="text-end fw-semibold">${toSafe(v)}</div>
+        </div>
+      `).join("");
+    }
+  }
 
   async function loadUsers() {
     const ui = window.AdminUI;
@@ -52,13 +94,19 @@
       try {
         if (action === "view") {
           const detail = await window.API.get(`/api/admin/users/${id}`);
-          document.getElementById("userDetailContent").textContent = JSON.stringify(detail.data || detail, null, 2);
+          renderUserDetailCard(detail.data || detail || {});
           bootstrap.Modal.getOrCreateInstance(document.getElementById("userDetailModal")).show();
         }
         if (action === "activity") {
           const activity = await window.API.get(`/api/admin/users/${id}/activity`);
           const items = activity.data?.items || activity.data || [];
-          document.getElementById("userActivityList").innerHTML = items.map((x) => `<li class="list-group-item">${x.created_at || "-"} · ${x.action || x.event || "-"}</li>`).join("");
+          document.getElementById("userActivityList").innerHTML = items.map((x) => `
+            <li class="list-group-item">
+              <div class="small text-secondary">${toSafe(x.created_at)}</div>
+              <div class="fw-semibold">${toSafe(x.action || x.event)}</div>
+              <div class="small">${toSafe(x.message || x.event)}</div>
+            </li>
+          `).join("");
           bootstrap.Modal.getOrCreateInstance(document.getElementById("userActivityModal")).show();
         }
         if (action === "toggle") {

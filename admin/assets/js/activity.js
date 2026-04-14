@@ -1,5 +1,11 @@
 (function () {
   const state = { page: 1, limit: 25, user: "", action: "", from: "", to: "" };
+  const formatMeta = (meta) => {
+    if (!meta || typeof meta !== "object") return "-";
+    const keys = Object.keys(meta);
+    if (!keys.length) return "-";
+    return keys.slice(0, 2).map((k) => `${k}: ${meta[k]}`).join(" | ");
+  };
 
   async function loadActivity() {
     const ui = window.AdminUI;
@@ -13,7 +19,7 @@
       body.innerHTML = "";
       rows.forEach((x) => {
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${x.created_at || "-"}</td><td>${x.actor_name || x.user_name || "System"}</td><td>${x.actor_type || "-"}</td><td>${x.action || x.event || "-"}</td><td><small>${JSON.stringify(x.meta || x.data || {})}</small></td>`;
+        tr.innerHTML = `<td>${x.created_at || "-"}</td><td>${x.actor_name || x.user_name || "System"}</td><td>${x.actor_type || "-"}</td><td>${x.action || x.event || "-"}</td><td><small>${formatMeta(x.meta || x.data || {})}</small></td>`;
         body.appendChild(tr);
       });
       ui.setEmpty("activityEmpty", rows.length === 0);

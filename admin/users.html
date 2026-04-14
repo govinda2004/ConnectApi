@@ -60,7 +60,36 @@
   </div>
 
   <div class="modal fade" id="userDetailModal">
-    <div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">User Details</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><pre id="userDetailContent" class="json-box"></pre></div></div></div>
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">User Full Details</h5>
+          <button class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-12 col-lg-4">
+              <div class="card h-100">
+                <div class="card-body text-center">
+                  <div id="userDetailAvatar" class="mx-auto mb-2 rounded-circle d-flex align-items-center justify-content-center" style="width:64px;height:64px;background:#dbeafe;font-weight:700;color:#1d4ed8;">U</div>
+                  <h5 id="userDetailName" class="mb-1">-</h5>
+                  <div id="userDetailEmail" class="text-secondary small mb-2">-</div>
+                  <span id="userDetailStatus" class="badge text-bg-secondary">unknown</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-lg-8">
+              <div class="card h-100">
+                <div class="card-header"><strong>Profile Information</strong></div>
+                <div class="card-body">
+                  <div id="userDetailContent" class="small"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="modal fade" id="userActivityModal">
     <div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">User Activity</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><ul id="userActivityList" class="list-group"></ul></div></div></div>

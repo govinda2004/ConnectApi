@@ -1,6 +1,7 @@
 (function () {
   let statsChart;
   let activityChart;
+  const toSafe = (v) => (v === null || v === undefined || v === "" ? "-" : String(v));
 
   function renderCharts(stats, rows) {
     const barCtx = document.getElementById("statsBarChart");
@@ -126,7 +127,28 @@
       try {
         if (action === "view") {
           const res = await window.API.get(`/api/admin/activity/${id}`);
-          document.getElementById("activityViewJson").textContent = JSON.stringify(res.data || res, null, 2);
+          const d = res.data || {};
+          const fields = [
+            ["Activity ID", d.id],
+            ["Time", d.created_at],
+            ["Actor Name", d.actor_name],
+            ["Actor Email", d.actor_email],
+            ["Actor ID", d.actor_id],
+            ["User ID", d.user_id],
+            ["Action Type", d.type || d.action],
+            ["Target ID", d.target_id],
+            ["Message", d.message],
+            ["Read", d.is_read],
+          ];
+          const content = document.getElementById("activityViewContent");
+          if (content) {
+            content.innerHTML = fields.map(([k, v]) => `
+              <div class="d-flex justify-content-between border-bottom py-2 gap-3">
+                <div class="text-secondary">${k}</div>
+                <div class="text-end fw-semibold">${toSafe(v)}</div>
+              </div>
+            `).join("");
+          }
           bootstrap.Modal.getOrCreateInstance(document.getElementById("activityViewModal")).show();
         }
         if (action === "edit") {
