@@ -3,6 +3,7 @@
   let activityChart;
   let pendingDeleteActivityId = null;
   const toSafe = (v) => (v === null || v === undefined || v === "" ? "-" : String(v));
+  const filters = { days: 14, user: "", action: "", from: "", to: "" };
 
   function renderCharts(stats, analytics) {
     const barCtx = document.getElementById("statsBarChart");
@@ -14,14 +15,14 @@
 
     const growth = analytics?.growth_points || [];
     const growthLabels = growth.map((p) => p.date?.slice(5) || "-");
-    const growthValues = growth.map((p) => Number(p.total || 0));
+    const growthValues = growth.map((p) => Number(p.users || 0));
 
     statsChart = new Chart(barCtx, {
       type: "line",
       data: {
         labels: growthLabels.length ? growthLabels : ["No Data"],
         datasets: [{
-          label: "Daily Total Activity (All Tables)",
+          label: "Daily New Users (Full User Records)",
           data: growthValues.length ? growthValues : [0],
           borderColor: "#2563eb",
           backgroundColor: "rgba(37,99,235,.18)",
@@ -76,8 +77,8 @@
     try {
       const [statsRes, analyticsRes, activityRes] = await Promise.all([
         window.API.get("/api/admin/dashboard/stats"),
-        window.API.get("/api/admin/dashboard/analytics", { days: 14 }),
-        window.API.get("/api/admin/activity/logs", { page: 1, limit: 12 }),
+        window.API.get("/api/admin/dashboard/analytics", filters),
+        window.API.get("/api/admin/activity/logs", { page: 1, limit: 12, user: filters.user, action: filters.action, from: filters.from, to: filters.to }),
       ]);
       const stats = statsRes.data || statsRes;
       const analytics = analyticsRes.data || analyticsRes;
@@ -117,6 +118,27 @@
   document.addEventListener("DOMContentLoaded", () => {
     if (document.body.dataset.page !== "dashboard") return;
     document.getElementById("refreshDashboard")?.addEventListener("click", loadDashboard);
+    document.getElementById("dashFilterApply")?.addEventListener("click", () => {
+      filters.days = Number(document.getElementById("dashDays")?.value || 14);
+      filters.user = (document.getElementById("dashUser")?.value || "").trim();
+      filters.action = (document.getElementById("dashAction")?.value || "").trim();
+      filters.from = document.getElementById("dashFrom")?.value || "";
+      filters.to = document.getElementById("dashTo")?.value || "";
+      loadDashboard();
+    });
+    document.getElementById("dashFilterReset")?.addEventListener("click", () => {
+      document.getElementById("dashDays").value = "14";
+      document.getElementById("dashUser").value = "";
+      document.getElementById("dashAction").value = "";
+      document.getElementById("dashFrom").value = "";
+      document.getElementById("dashTo").value = "";
+      filters.days = 14;
+      filters.user = "";
+      filters.action = "";
+      filters.from = "";
+      filters.to = "";
+      loadDashboard();
+    });
 
     document.getElementById("recentActivityBody")?.addEventListener("click", async (e) => {
       const btn = e.target.closest("button[data-action]");

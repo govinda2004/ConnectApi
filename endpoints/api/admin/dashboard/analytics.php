@@ -20,11 +20,40 @@ function tableHasCreatedAt(PDO $db, string $table): bool
 }
 
 $days = max(7, min(30, (int)($_GET['days'] ?? 14)));
+$user = trim((string)($_GET['user'] ?? ''));
+$action = trim((string)($_GET['action'] ?? ''));
+$from = trim((string)($_GET['from'] ?? ''));
+$to = trim((string)($_GET['to'] ?? ''));
 
 // Full-table activity mix from notifications.
 $mix = [];
 try {
-    $stmt = $db->query("SELECT type, COUNT(*) AS total FROM notifications GROUP BY type ORDER BY total DESC");
+    $where = [];
+    $params = [];
+    if ($user !== '') {
+        $where[] = 'EXISTS (SELECT 1 FROM users ux WHERE ux.id = notifications.actor_id AND (ux.name LIKE ? OR ux.email LIKE ?))';
+        $params[] = "%{$user}%";
+        $params[] = "%{$user}%";
+    }
+    if ($action !== '') {
+        $where[] = '(type LIKE ? OR message LIKE ?)';
+        $params[] = "%{$action}%";
+        $params[] = "%{$action}%";
+    }
+    if ($from !== '') {
+        $where[] = 'DATE(created_at) >= ?';
+        $params[] = $from;
+    }
+    if ($to !== '') {
+        $where[] = 'DATE(created_at) <= ?';
+        $params[] = $to;
+    }
+    $whereSql = empty($where) ? '' : ('WHERE ' . implode(' AND ', $where));
+    $sql = "SELECT type, COUNT(*) AS total FROM notifications {$whereSql} GROUP BY type ORDER BY total DESC";
+    $stmt = $db->prepare($sql);
+    $i = 1;
+    foreach ($params as $p) $stmt->bindValue($i++, $p, PDO::PARAM_STR);
+    $stmt->execute();
     $mix = $stmt->fetchAll();
 } catch (Throwable $e) {
     $mix = [];

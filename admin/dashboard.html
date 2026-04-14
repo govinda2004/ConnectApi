@@ -18,6 +18,43 @@
           <button id="refreshDashboard" class="btn btn-sm btn-outline-primary">Refresh Data</button>
         </div>
 
+        <div class="card mb-3">
+          <div class="card-body">
+            <div class="row g-2 align-items-end">
+              <div class="col-6 col-md-2">
+                <label class="form-label small mb-1">Days</label>
+                <select id="dashDays" class="form-select form-select-sm">
+                  <option value="7">7 Days</option>
+                  <option value="14" selected>14 Days</option>
+                  <option value="30">30 Days</option>
+                </select>
+              </div>
+              <div class="col-6 col-md-3">
+                <label class="form-label small mb-1">User</label>
+                <input id="dashUser" class="form-control form-control-sm" placeholder="name/email">
+              </div>
+              <div class="col-6 col-md-3">
+                <label class="form-label small mb-1">Action</label>
+                <input id="dashAction" class="form-control form-control-sm" placeholder="like/comment/connection">
+              </div>
+              <div class="col-6 col-md-2">
+                <label class="form-label small mb-1">From</label>
+                <input id="dashFrom" type="date" class="form-control form-control-sm">
+              </div>
+              <div class="col-6 col-md-2">
+                <label class="form-label small mb-1">To</label>
+                <input id="dashTo" type="date" class="form-control form-control-sm">
+              </div>
+              <div class="col-6 col-md-2 d-grid">
+                <button id="dashFilterApply" class="btn btn-sm btn-primary">Apply Filter</button>
+              </div>
+              <div class="col-6 col-md-2 d-grid">
+                <button id="dashFilterReset" class="btn btn-sm btn-outline-secondary">Reset</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="row g-3 mb-4">
           <div class="col-12 col-sm-6 col-xl-3">
             <div class="card stat-card kpi-card kpi-users"><div class="card-body"><div class="text-secondary small">Total Users</div><h3 id="statUsers">--</h3><div class="small text-secondary">Platform reach</div></div></div>
