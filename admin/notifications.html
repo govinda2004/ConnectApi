@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en" data-page="notifications">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Notifications Center</title>
+  <link rel="stylesheet" href="assets/vendor/bootstrap/bootstrap.min.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="notifications">
+  <div class="app-shell">
+    <aside id="sidebarContainer"></aside>
+    <div class="app-main">
+      <header id="headerContainer"></header>
+      <main class="container-fluid py-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+          <h1 class="h4 page-title mb-0">Notifications Center</h1>
+          <span class="badge text-bg-success">Send + Sent Logs</span>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-xl-5">
+            <div class="card h-100">
+              <div class="card-header"><strong>Send Notification</strong></div>
+              <div class="card-body">
+                <form id="notifyForm" class="row g-2">
+                  <div class="col-12">
+                    <select id="notifyMode" class="form-select">
+                      <option value="single">Send to One User</option>
+                      <option value="all">Broadcast to All Users</option>
+                    </select>
+                  </div>
+                  <div class="col-12" id="notifyUserWrap">
+                    <select id="notifyUserId" class="form-select">
+                      <option value="">Select user</option>
+                    </select>
+                  </div>
+                  <div class="col-12"><input id="notifyTitle" class="form-control" placeholder="Title" value="Admin Notice"></div>
+                  <div class="col-12"><textarea id="notifyMessage" class="form-control" rows="3" placeholder="Write message..."></textarea></div>
+                  <div class="col-12">
+                    <label class="form-label small mb-1">Optional Image</label>
+                    <input id="notifyImage" type="file" class="form-control" accept="image/*">
+                    <div class="form-text">Optional image with notification.</div>
+                  </div>
+                  <div class="col-12 d-grid"><button class="btn btn-success" type="submit" id="notifySendBtn">Send Notification</button></div>
+                </form>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-xl-7">
+            <div class="card h-100">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>Sent Admin Notifications</strong>
+                <button id="refreshAdminNotices" class="btn btn-sm btn-outline-primary">Refresh</button>
+              </div>
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle">
+                    <thead><tr><th>ID</th><th>Time</th><th>Receiver</th><th>Type</th><th>Message</th><th>Image</th></tr></thead>
+                    <tbody id="adminNoticesBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/notifications.js"></script>
+</body>
+</html>
