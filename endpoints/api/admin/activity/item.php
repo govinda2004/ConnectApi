@@ -10,9 +10,11 @@ if ($id <= 0) jsonError('Invalid activity id');
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $stmt = $db->prepare('
         SELECT n.id, n.user_id, n.actor_id, n.type, n.message, n.target_id, n.is_read, n.created_at,
-               u.name AS actor_name, u.email AS actor_email
+               u.name AS actor_name, u.email AS actor_email,
+               tu.name AS user_name, tu.email AS user_email
         FROM notifications n
         LEFT JOIN users u ON u.id = n.actor_id
+        LEFT JOIN users tu ON tu.id = n.user_id
         WHERE n.id = ?
         LIMIT 1
     ');

@@ -1,9 +1,10 @@
 (function () {
   let statsChart;
   let activityChart;
+  let pendingDeleteActivityId = null;
   const toSafe = (v) => (v === null || v === undefined || v === "" ? "-" : String(v));
 
-  function renderCharts(stats, rows) {
+  function renderCharts(stats, analytics) {
     const barCtx = document.getElementById("statsBarChart");
     const donutCtx = document.getElementById("activityDonutChart");
     if (!barCtx || !donutCtx || typeof Chart === "undefined") return;
@@ -11,36 +12,34 @@
     if (statsChart) statsChart.destroy();
     if (activityChart) activityChart.destroy();
 
+    const growth = analytics?.growth_points || [];
+    const growthLabels = growth.map((p) => p.date?.slice(5) || "-");
+    const growthValues = growth.map((p) => Number(p.total || 0));
+
     statsChart = new Chart(barCtx, {
-      type: "bar",
+      type: "line",
       data: {
-        labels: ["Users", "Admins", "Active Users", "Records"],
+        labels: growthLabels.length ? growthLabels : ["No Data"],
         datasets: [{
-          label: "Count",
-          data: [
-            Number(stats.total_users || 0),
-            Number(stats.total_admins || 0),
-            Number(stats.active_users || 0),
-            Number(stats.total_records || 0),
-          ],
-          backgroundColor: ["#3b82f6", "#8b5cf6", "#10b981", "#f59e0b"],
-          borderRadius: 8,
+          label: "Daily Total Activity (All Tables)",
+          data: growthValues.length ? growthValues : [0],
+          borderColor: "#2563eb",
+          backgroundColor: "rgba(37,99,235,.18)",
+          pointBackgroundColor: "#1d4ed8",
+          fill: true,
+          tension: .35,
         }],
       },
       options: {
         responsive: true,
-        plugins: { legend: { display: false } },
+        plugins: { legend: { display: true } },
         scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
       },
     });
 
-    const actionCount = {};
-    rows.forEach((r) => {
-      const a = r.action || "other";
-      actionCount[a] = (actionCount[a] || 0) + 1;
-    });
-    const labels = Object.keys(actionCount).slice(0, 6);
-    const values = labels.map((l) => actionCount[l]);
+    const mix = analytics?.activity_mix || [];
+    const labels = mix.map((m) => m.type || "other");
+    const values = mix.map((m) => Number(m.total || 0));
     if (!labels.length) {
       labels.push("No Activity");
       values.push(1);
@@ -75,11 +74,13 @@
     const ui = window.AdminUI;
     ui.setLoading("dashboardLoading", true);
     try {
-      const [statsRes, activityRes] = await Promise.all([
+      const [statsRes, analyticsRes, activityRes] = await Promise.all([
         window.API.get("/api/admin/dashboard/stats"),
+        window.API.get("/api/admin/dashboard/analytics", { days: 14 }),
         window.API.get("/api/admin/activity/logs", { page: 1, limit: 12 }),
       ]);
       const stats = statsRes.data || statsRes;
+      const analytics = analyticsRes.data || analyticsRes;
       document.getElementById("statUsers").textContent = stats.total_users ?? 0;
       document.getElementById("statAdmins").textContent = stats.total_admins ?? 0;
       document.getElementById("statActive").textContent = stats.active_users ?? 0;
@@ -105,7 +106,7 @@
         body.appendChild(tr);
       });
       ui.setEmpty("dashboardEmpty", rows.length === 0);
-      renderCharts(stats, rows);
+      renderCharts(stats, analytics);
     } catch (e) {
       ui.showToast(e.message, "error");
     } finally {
@@ -128,11 +129,14 @@
         if (action === "view") {
           const res = await window.API.get(`/api/admin/activity/${id}`);
           const d = res.data || {};
+          const badgeClass = actionBadge(d.type || d.action);
           const fields = [
             ["Activity ID", d.id],
             ["Time", d.created_at],
             ["Actor Name", d.actor_name],
             ["Actor Email", d.actor_email],
+            ["Receiver Name", d.user_name],
+            ["Receiver Email", d.user_email],
             ["Actor ID", d.actor_id],
             ["User ID", d.user_id],
             ["Action Type", d.type || d.action],
@@ -142,12 +146,17 @@
           ];
           const content = document.getElementById("activityViewContent");
           if (content) {
-            content.innerHTML = fields.map(([k, v]) => `
+            content.innerHTML = `
+              <div class="mb-3">
+                <span class="badge ${badgeClass}">${toSafe(d.type || d.action)}</span>
+              </div>
+              ${fields.map(([k, v]) => `
               <div class="d-flex justify-content-between border-bottom py-2 gap-3">
                 <div class="text-secondary">${k}</div>
                 <div class="text-end fw-semibold">${toSafe(v)}</div>
               </div>
-            `).join("");
+              `).join("")}
+            `;
           }
           bootstrap.Modal.getOrCreateInstance(document.getElementById("activityViewModal")).show();
         }
@@ -157,13 +166,35 @@
           document.getElementById("editActivityId").value = d.id || id;
           document.getElementById("editActivityAction").value = d.type || d.action || "";
           document.getElementById("editActivityMessage").value = d.message || "";
+          const details = document.getElementById("editActivityDetails");
+          if (details) {
+            const fields = [
+              ["Activity ID", d.id],
+              ["Created At", d.created_at],
+              ["Actor", d.actor_name],
+              ["Actor Email", d.actor_email],
+              ["Receiver", d.user_name],
+              ["Receiver Email", d.user_email],
+              ["Target ID", d.target_id],
+              ["Read", d.is_read],
+            ];
+            details.innerHTML = fields.map(([k, v]) => `
+              <div class="d-flex justify-content-between border-bottom py-2 gap-3">
+                <div class="text-secondary">${k}</div>
+                <div class="text-end fw-semibold">${toSafe(v)}</div>
+              </div>
+            `).join("");
+          }
           bootstrap.Modal.getOrCreateInstance(document.getElementById("activityEditModal")).show();
         }
         if (action === "delete") {
-          if (!confirm("Delete this activity log?")) return;
-          await window.API.delete(`/api/admin/activity/${id}`);
-          window.AdminUI.showToast("Activity deleted");
-          loadDashboard();
+          pendingDeleteActivityId = id;
+          const row = btn.closest("tr");
+          const preview = document.getElementById("deleteActivityPreview");
+          if (preview) {
+            preview.textContent = row ? row.innerText.replace(/\s+/g, " ").slice(0, 220) : `Activity #${id}`;
+          }
+          bootstrap.Modal.getOrCreateInstance(document.getElementById("activityDeleteModal")).show();
         }
       } catch (err) {
         window.AdminUI.showToast(err.message, "error");
@@ -181,6 +212,19 @@
         await window.API.put(`/api/admin/activity/${id}`, payload);
         bootstrap.Modal.getOrCreateInstance(document.getElementById("activityEditModal")).hide();
         window.AdminUI.showToast("Activity updated");
+        loadDashboard();
+      } catch (err) {
+        window.AdminUI.showToast(err.message, "error");
+      }
+    });
+
+    document.getElementById("confirmDeleteActivity")?.addEventListener("click", async () => {
+      if (!pendingDeleteActivityId) return;
+      try {
+        await window.API.delete(`/api/admin/activity/${pendingDeleteActivityId}`);
+        bootstrap.Modal.getOrCreateInstance(document.getElementById("activityDeleteModal")).hide();
+        window.AdminUI.showToast("Activity deleted");
+        pendingDeleteActivityId = null;
         loadDashboard();
       } catch (err) {
         window.AdminUI.showToast(err.message, "error");

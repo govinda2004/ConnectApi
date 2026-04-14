@@ -171,6 +171,7 @@ $endpoints = [
     'api/admin/login'        => 'endpoints/api/admin/login.php',
     'api/admin/profile'      => 'endpoints/api/admin/profile.php',
     'api/admin/dashboard/stats' => 'endpoints/api/admin/dashboard/stats.php',
+    'api/admin/dashboard/analytics' => 'endpoints/api/admin/dashboard/analytics.php',
     'api/admin/activity/recent' => 'endpoints/api/admin/activity/recent.php',
     'api/admin/change-password' => 'endpoints/api/admin/change_password.php',
     'api/admin/settings'     => 'endpoints/api/admin/settings.php',

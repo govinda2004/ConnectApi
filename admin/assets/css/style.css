@@ -103,6 +103,18 @@ body.sidebar-collapsed .app-main {
 
 .dashboard-activity-table td .btn { margin-left: .2rem; }
 
+#activityDeleteModal .modal-content {
+  border: 1px solid #fecaca;
+  box-shadow: 0 12px 30px rgba(185, 28, 28, .15);
+}
+
+#deleteActivityPreview {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: .6rem;
+  padding: .65rem .8rem;
+}
+
 .json-box {
   background: #0d1117;
   color: #c9d1d9;
