@@ -270,3 +270,48 @@ function upsertInstitutionsMaster(PDO $db, array $names): void {
         // Best-effort upsert.
     }
 }
+
+function ensureSkillsMasterTable(PDO $db): void {
+    static $checked = false;
+    if ($checked) return;
+    $checked = true;
+
+    try {
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS skills_master (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(120) NOT NULL UNIQUE,
+                category VARCHAR(80) NULL,
+                is_active TINYINT(1) NOT NULL DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_name (name),
+                INDEX idx_category (category)
+            )
+        ");
+    } catch (Throwable $e) {
+        // Best-effort guard.
+    }
+}
+
+function upsertSkillsMaster(PDO $db, array $names): void {
+    ensureSkillsMasterTable($db);
+    if (empty($names)) return;
+
+    try {
+        $stmt = $db->prepare("
+            INSERT INTO skills_master (name, is_active)
+            VALUES (?, 1)
+            ON DUPLICATE KEY UPDATE
+                is_active = 1,
+                updated_at = CURRENT_TIMESTAMP
+        ");
+        foreach ($names as $n) {
+            $name = trim((string)$n);
+            if ($name === '') continue;
+            $stmt->execute([$name]);
+        }
+    } catch (Throwable $e) {
+        // Best-effort upsert.
+    }
+}

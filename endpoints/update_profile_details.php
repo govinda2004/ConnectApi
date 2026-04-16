@@ -22,6 +22,7 @@ ensureProfilesWebsiteColumn($db);
 ensureProfilesGenderColumn($db);
 ensureWorkExperienceOrgUserColumn($db);
 ensureInstitutionsMasterTable($db);
+ensureSkillsMasterTable($db);
 
 // Parse JSON body
 $input = json_decode(file_get_contents('php://input'), true);
@@ -109,12 +110,16 @@ if (isset($input['skills']) && is_array($input['skills'])) {
     $stmt = $db->prepare(
         'INSERT INTO skills (user_id, skill_name) VALUES (?, ?)'
     );
+    $skillNamesForMaster = [];
     foreach ($input['skills'] as $s) {
         $skillName = is_string($s) ? $s : ($s['skill_name'] ?? '');
         if (!empty(trim($skillName))) {
-            $stmt->execute([$userId, trim($skillName)]);
+            $normalized = trim($skillName);
+            $stmt->execute([$userId, $normalized]);
+            $skillNamesForMaster[] = $normalized;
         }
     }
+    upsertSkillsMaster($db, $skillNamesForMaster);
 }
 
 jsonSuccess(null, 'Profile updated successfully');

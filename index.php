@@ -141,6 +141,7 @@ $endpoints = [
     'search_organizations'   => 'endpoints/search_organizations.php',
     'get_org_people'         => 'endpoints/get_org_people.php',
     'get_institutions_suggestions' => 'endpoints/get_institutions_suggestions.php',
+    'get_skills_suggestions' => 'endpoints/get_skills_suggestions.php',
 
     // Stories
     'add_story'              => 'endpoints/add_story.php',
