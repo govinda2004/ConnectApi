@@ -225,3 +225,48 @@ function ensureWorkExperienceOrgUserColumn(PDO $db): void {
         }
     }
 }
+
+function ensureInstitutionsMasterTable(PDO $db): void {
+    static $checked = false;
+    if ($checked) return;
+    $checked = true;
+
+    try {
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS institutions_master (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(255) NOT NULL UNIQUE,
+                type ENUM('university','college','institute','school','other') DEFAULT 'other',
+                is_active TINYINT(1) NOT NULL DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_name (name),
+                INDEX idx_type (type)
+            )
+        ");
+    } catch (Throwable $e) {
+        // Best-effort guard.
+    }
+}
+
+function upsertInstitutionsMaster(PDO $db, array $names): void {
+    ensureInstitutionsMasterTable($db);
+    if (empty($names)) return;
+
+    try {
+        $stmt = $db->prepare("
+            INSERT INTO institutions_master (name, type, is_active)
+            VALUES (?, 'other', 1)
+            ON DUPLICATE KEY UPDATE
+                is_active = 1,
+                updated_at = CURRENT_TIMESTAMP
+        ");
+        foreach ($names as $n) {
+            $name = trim((string)$n);
+            if ($name === '') continue;
+            $stmt->execute([$name]);
+        }
+    } catch (Throwable $e) {
+        // Best-effort upsert.
+    }
+}

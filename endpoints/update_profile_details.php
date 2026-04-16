@@ -21,6 +21,7 @@ ensureAccountTypeColumn($db);
 ensureProfilesWebsiteColumn($db);
 ensureProfilesGenderColumn($db);
 ensureWorkExperienceOrgUserColumn($db);
+ensureInstitutionsMasterTable($db);
 
 // Parse JSON body
 $input = json_decode(file_get_contents('php://input'), true);
@@ -96,6 +97,10 @@ if (isset($input['education']) && is_array($input['education'])) {
             $e['pass_year'] ?? null,
         ]);
     }
+    $eduNames = array_map(static function ($e) {
+        return is_array($e) ? ($e['org_name'] ?? '') : '';
+    }, $input['education']);
+    upsertInstitutionsMaster($db, $eduNames);
 }
 
 // Update skills (replace all)

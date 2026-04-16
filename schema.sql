@@ -267,3 +267,15 @@ CREATE TABLE IF NOT EXISTS post_shares (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_post (post_id)
 );
+
+-- Master table for university/college/institute suggestions
+CREATE TABLE IF NOT EXISTS institutions_master (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL UNIQUE,
+  type ENUM('university','college','institute','school','other') DEFAULT 'other',
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_name (name),
+  INDEX idx_type (type)
+);

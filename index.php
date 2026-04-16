@@ -140,6 +140,7 @@ $endpoints = [
     'get_account_type'       => 'endpoints/get_account_type.php',
     'search_organizations'   => 'endpoints/search_organizations.php',
     'get_org_people'         => 'endpoints/get_org_people.php',
+    'get_institutions_suggestions' => 'endpoints/get_institutions_suggestions.php',
 
     // Stories
     'add_story'              => 'endpoints/add_story.php',
