@@ -185,3 +185,43 @@ function ensureProfilesWebsiteColumn(PDO $db): void {
         }
     }
 }
+
+function ensureProfilesGenderColumn(PDO $db): void {
+    static $checked = false;
+    if ($checked) return;
+    $checked = true;
+
+    try {
+        $db->exec("ALTER TABLE profiles ADD COLUMN IF NOT EXISTS gender VARCHAR(32) NULL AFTER location");
+    } catch (Throwable $e) {
+        try {
+            $stmt = $db->query("SHOW COLUMNS FROM profiles LIKE 'gender'");
+            $exists = $stmt !== false && $stmt->fetch() !== false;
+            if (!$exists) {
+                $db->exec("ALTER TABLE profiles ADD COLUMN gender VARCHAR(32) NULL AFTER location");
+            }
+        } catch (Throwable $inner) {
+            // Best-effort migration guard.
+        }
+    }
+}
+
+function ensureWorkExperienceOrgUserColumn(PDO $db): void {
+    static $checked = false;
+    if ($checked) return;
+    $checked = true;
+
+    try {
+        $db->exec("ALTER TABLE work_experience ADD COLUMN IF NOT EXISTS org_user_id INT NULL AFTER user_id");
+    } catch (Throwable $e) {
+        try {
+            $stmt = $db->query("SHOW COLUMNS FROM work_experience LIKE 'org_user_id'");
+            $exists = $stmt !== false && $stmt->fetch() !== false;
+            if (!$exists) {
+                $db->exec("ALTER TABLE work_experience ADD COLUMN org_user_id INT NULL AFTER user_id");
+            }
+        } catch (Throwable $inner) {
+            // Best-effort migration guard.
+        }
+    }
+}

@@ -138,6 +138,8 @@ $endpoints = [
     'remove_profile_image'   => 'endpoints/remove_profile_image.php',
     'set_account_type'       => 'endpoints/set_account_type.php',
     'get_account_type'       => 'endpoints/get_account_type.php',
+    'search_organizations'   => 'endpoints/search_organizations.php',
+    'get_org_people'         => 'endpoints/get_org_people.php',
 
     // Stories
     'add_story'              => 'endpoints/add_story.php',

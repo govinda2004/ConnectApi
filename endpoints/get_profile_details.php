@@ -19,6 +19,8 @@ $loggedInUserId = requireAuth();
 $db = getDB();
 ensureAccountTypeColumn($db);
 ensureProfilesWebsiteColumn($db);
+ensureProfilesGenderColumn($db);
+ensureWorkExperienceOrgUserColumn($db);
 
 // If user_id param provided, show that user's profile; otherwise show own
 $targetUserId = isset($_GET['user_id']) && !empty($_GET['user_id'])
@@ -81,6 +83,7 @@ $data = [
         'profile_banner' => $profile['profile_banner'] ?? null,
         'headline'       => $profile['headline'] ?? null,
         'location'       => $profile['location'] ?? null,
+        'gender'         => $profile['gender'] ?? null,
         'about'          => $profile['about'] ?? null,
         'website'        => $profile['website'] ?? null,
         'created_at'     => $profile['created_at'] ?? null,

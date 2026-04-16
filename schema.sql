@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   profile_banner VARCHAR(500) NULL,
   headline VARCHAR(255) NULL,
   location VARCHAR(255) NULL,
+  gender VARCHAR(32) NULL,
   about TEXT NULL,
   contact_no VARCHAR(20) NULL,
   website VARCHAR(500) NULL,
@@ -42,6 +43,7 @@ CREATE TABLE IF NOT EXISTS profiles (
 CREATE TABLE IF NOT EXISTS work_experience (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
+  org_user_id INT NULL,
   org_name VARCHAR(255) NOT NULL,
   position VARCHAR(255) NULL,
   org_type VARCHAR(100) NULL,

@@ -19,6 +19,8 @@ $userId = requireAuth();
 $db = getDB();
 ensureAccountTypeColumn($db);
 ensureProfilesWebsiteColumn($db);
+ensureProfilesGenderColumn($db);
+ensureWorkExperienceOrgUserColumn($db);
 
 // Parse JSON body
 $input = json_decode(file_get_contents('php://input'), true);
@@ -45,7 +47,7 @@ if (isset($input['account_type'])) {
 // Update profile fields
 $profileFields = [];
 $profileValues = [];
-foreach (['headline', 'location', 'about', 'contact_no', 'website'] as $field) {
+foreach (['headline', 'location', 'gender', 'about', 'contact_no', 'website'] as $field) {
     if (isset($input[$field])) {
         $profileFields[] = "$field = ?";
         $profileValues[] = $input[$field];
@@ -63,11 +65,14 @@ if (!empty($profileFields)) {
 if (isset($input['work']) && is_array($input['work'])) {
     $db->prepare('DELETE FROM work_experience WHERE user_id = ?')->execute([$userId]);
     $stmt = $db->prepare(
-        'INSERT INTO work_experience (user_id, org_name, position, org_type, start_date, end_date) VALUES (?, ?, ?, ?, ?, ?)'
+        'INSERT INTO work_experience (user_id, org_user_id, org_name, position, org_type, start_date, end_date) VALUES (?, ?, ?, ?, ?, ?, ?)'
     );
     foreach ($input['work'] as $w) {
+        $orgUserId = isset($w['org_user_id']) ? (int)$w['org_user_id'] : null;
+        if ($orgUserId !== null && $orgUserId <= 0) $orgUserId = null;
         $stmt->execute([
             $userId,
+            $orgUserId,
             $w['org_name'] ?? '',
             $w['position'] ?? null,
             $w['org_type'] ?? null,
