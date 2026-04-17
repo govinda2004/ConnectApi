@@ -212,6 +212,7 @@ $endpoints = [
 
     // Setup (run once)
     'setup_db'               => 'endpoints/setup_db.php',
+    'view_content'           => 'endpoints/view_content.php',
     // Admin API (static routes)
     'api/admin/login'        => 'endpoints/api/admin/login.php',
     'api/admin/profile'      => 'endpoints/api/admin/profile.php',

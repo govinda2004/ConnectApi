@@ -21,6 +21,10 @@ $defaultPages = [
         'title' => 'Terms & Conditions',
         'html_content' => '<h2>Terms & Conditions</h2><p>By using ConnectIn, you agree to our terms of service. We respect your privacy and protect your data according to applicable laws.</p>',
     ],
+    'privacy_policy' => [
+        'title' => 'Privacy Policy',
+        'html_content' => '<h2>Privacy Policy</h2><p>Your privacy is important to us. We collect minimal data and never sell it to third parties.</p>',
+    ],
     'about' => [
         'title' => 'About ConnectIn',
         'html_content' => '<h2>About ConnectIn</h2><p>ConnectIn is a professional networking platform that helps you build meaningful connections, discover opportunities, and grow your career.</p><p><strong>Version:</strong> 1.0.0</p>',
@@ -84,6 +88,13 @@ $data = [
             'icon' => 'description_outlined',
             'action' => 'content',
             'content_key' => 'terms_conditions',
+        ],
+        [
+            'key' => 'privacy_policy',
+            'label' => 'Privacy Policy',
+            'icon' => 'privacy_tip_outlined',
+            'action' => 'content',
+            'content_key' => 'privacy_policy',
         ],
         [
             'key' => 'about',

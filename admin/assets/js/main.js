@@ -81,7 +81,7 @@
     const table = document.getElementById(tableId);
     if (!table) return;
     const rows = [...table.querySelectorAll("tr")].map((tr) => [...tr.querySelectorAll("th,td")].map((td) => `"${(td.innerText || "").replace(/"/g, '""')}"`).join(","));
-    const blob = new Blob([rows.join("\\n")], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob([rows.join("\n")], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url; a.download = fileName; a.click();
@@ -105,6 +105,10 @@
       if (byKey.terms_conditions) {
         document.getElementById("termsTitle").value = byKey.terms_conditions.title || "Terms & Conditions";
         document.getElementById("termsHtml").value = byKey.terms_conditions.html_content || "";
+      }
+      if (byKey.privacy_policy) {
+        document.getElementById("privacyTitle").value = byKey.privacy_policy.title || "Privacy Policy";
+        document.getElementById("privacyHtml").value = byKey.privacy_policy.html_content || "";
       }
       if (byKey.about) {
         document.getElementById("aboutTitle").value = byKey.about.title || "About ConnectIn";
@@ -152,6 +156,10 @@
             terms_conditions: {
               title: document.getElementById("termsTitle").value.trim(),
               html_content: document.getElementById("termsHtml").value,
+            },
+            privacy_policy: {
+              title: document.getElementById("privacyTitle").value.trim(),
+              html_content: document.getElementById("privacyHtml").value,
             },
             about: {
               title: document.getElementById("aboutTitle").value.trim(),
