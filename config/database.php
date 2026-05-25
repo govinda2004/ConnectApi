@@ -16,6 +16,24 @@ function getDB(): PDO {
     $user = getenv('DB_USER') ?: 'root';
     $pass = getenv('DB_PASS') ?: '';
 
+    // Support common Render-style single connection string as fallback.
+    $databaseUrl = getenv('DATABASE_URL') ?: getenv('MYSQL_URL') ?: '';
+    if ($databaseUrl && (getenv('DB_HOST') === false || getenv('DB_NAME') === false || getenv('DB_USER') === false)) {
+        $parts = parse_url($databaseUrl);
+        if (is_array($parts)) {
+            $scheme = strtolower($parts['scheme'] ?? '');
+            // This API uses MySQL; accept mysql and mysql-compatible schemes only.
+            if (in_array($scheme, ['mysql', 'mariadb'], true)) {
+                $host = $parts['host'] ?? $host;
+                $port = isset($parts['port']) ? (string)$parts['port'] : $port;
+                $path = $parts['path'] ?? '';
+                $name = ltrim($path, '/') ?: $name;
+                $user = $parts['user'] ?? $user;
+                $pass = $parts['pass'] ?? $pass;
+            }
+        }
+    }
+
     $dsn = "mysql:host=$host;port=$port;dbname=$name;charset=utf8mb4";
 
     $options = [
