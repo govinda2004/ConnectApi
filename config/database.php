@@ -30,6 +30,8 @@ function getDB(): PDO {
                 $name = ltrim($path, '/') ?: $name;
                 $user = $parts['user'] ?? $user;
                 $pass = $parts['pass'] ?? $pass;
+            } elseif (in_array($scheme, ['postgres', 'postgresql'], true)) {
+                throw new RuntimeException('PostgreSQL URL detected, but this API currently supports MySQL only. Configure DB_* for a MySQL database (port 3306).');
             }
         }
     }
