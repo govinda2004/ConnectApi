@@ -28,6 +28,15 @@
     return { token, admin };
   }
 
+  async function bootstrapSuperAdmin(payload) {
+    const res = await window.API.post("/api/admin/bootstrap", payload, false);
+    const token = res?.token || res?.data?.token;
+    const admin = res?.admin || res?.data?.admin || null;
+    if (!token) throw new Error("Token missing");
+    setSession(token, admin);
+    return { token, admin };
+  }
+
   function logout() {
     clearSession();
     if (!location.pathname.endsWith("index.html")) location.href = "index.html";
@@ -42,5 +51,5 @@
   }
 
   window.addEventListener("admin:unauthorized", logout);
-  window.Auth = { getToken, isAuthenticated, getAdmin, login, logout, requireAuth };
+  window.Auth = { getToken, isAuthenticated, getAdmin, login, bootstrapSuperAdmin, logout, requireAuth };
 })();

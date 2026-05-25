@@ -19,6 +19,18 @@
           <div class="mb-3"><label class="form-label">Password</label><input id="password" type="password" class="form-control" required></div>
           <button id="loginBtn" class="btn btn-primary w-100" type="submit">Login</button>
         </form>
+        <hr>
+        <details>
+          <summary class="fw-semibold">Create Super Admin (first-time setup)</summary>
+          <p class="text-body-secondary mt-2 mb-2 small">Requires <code>SUPER_ADMIN_SETUP_KEY</code> in server env.</p>
+          <form id="bootstrapForm">
+            <div class="mb-2"><label class="form-label">Name</label><input id="bootstrapName" type="text" class="form-control" placeholder="Super Admin"></div>
+            <div class="mb-2"><label class="form-label">Email</label><input id="bootstrapEmail" type="email" class="form-control" required></div>
+            <div class="mb-2"><label class="form-label">Password</label><input id="bootstrapPassword" type="password" class="form-control" minlength="6" required></div>
+            <div class="mb-3"><label class="form-label">Setup Key</label><input id="bootstrapKey" type="password" class="form-control" required></div>
+            <button class="btn btn-outline-primary w-100" type="submit">Create / Reset Super Admin</button>
+          </form>
+        </details>
       </div>
     </div>
   </main>
@@ -29,6 +41,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       if (window.Auth.isAuthenticated()) location.href = 'dashboard.html';
       const form = document.getElementById('loginForm');
+      const bootstrapForm = document.getElementById('bootstrapForm');
       const alertBox = document.getElementById('loginAlert');
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -41,6 +54,22 @@
         } catch (err) {
           alertBox.className = 'alert alert-danger';
           alertBox.textContent = err.message || 'Login failed';
+        }
+      });
+
+      bootstrapForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
+          await window.Auth.bootstrapSuperAdmin({
+            name: document.getElementById('bootstrapName').value.trim() || 'Super Admin',
+            email: document.getElementById('bootstrapEmail').value.trim(),
+            password: document.getElementById('bootstrapPassword').value,
+            setup_key: document.getElementById('bootstrapKey').value,
+          });
+          location.href = 'dashboard.html';
+        } catch (err) {
+          alertBox.className = 'alert alert-danger';
+          alertBox.textContent = err.message || 'Super admin setup failed';
         }
       });
     });
