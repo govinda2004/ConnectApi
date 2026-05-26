@@ -23,11 +23,13 @@
         <details>
           <summary class="fw-semibold">Create Super Admin (first-time setup)</summary>
           <p class="text-body-secondary mt-2 mb-2 small">Setup key is optional right now. If <code>SUPER_ADMIN_SETUP_KEY</code> is configured in server env, it will be required.</p>
+          <p class="text-body-secondary mt-2 mb-2 small">Requires <code>SUPER_ADMIN_SETUP_KEY</code> in server env.</p>
           <form id="bootstrapForm">
             <div class="mb-2"><label class="form-label">Name</label><input id="bootstrapName" type="text" class="form-control" placeholder="Super Admin"></div>
             <div class="mb-2"><label class="form-label">Email</label><input id="bootstrapEmail" type="email" class="form-control" required></div>
             <div class="mb-2"><label class="form-label">Password</label><input id="bootstrapPassword" type="password" class="form-control" minlength="6" required></div>
             <div class="mb-3"><label class="form-label">Setup Key (optional for first admin)</label><input id="bootstrapKey" type="password" class="form-control"></div>
+            <div class="mb-3"><label class="form-label">Setup Key</label><input id="bootstrapKey" type="password" class="form-control" required></div>
             <button class="btn btn-outline-primary w-100" type="submit">Create / Reset Super Admin</button>
           </form>
         </details>
