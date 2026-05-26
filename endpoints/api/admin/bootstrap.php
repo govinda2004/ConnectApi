@@ -7,6 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $setupKey = trim((string)(getenv('SUPER_ADMIN_SETUP_KEY') ?: ''));
+
 if ($setupKey === '') {
     jsonError('Super admin setup is disabled. Set SUPER_ADMIN_SETUP_KEY env var first.', 403);
 }
@@ -16,6 +17,7 @@ $key = trim((string)($input['setup_key'] ?? $_POST['setup_key'] ?? ''));
 $name = trim((string)($input['name'] ?? $_POST['name'] ?? 'Super Admin'));
 $email = strtolower(trim((string)($input['email'] ?? $_POST['email'] ?? '')));
 $password = (string)($input['password'] ?? $_POST['password'] ?? '');
+
 
 if ($key === '' || !hash_equals($setupKey, $key)) {
     jsonError('Invalid setup key', 403);
