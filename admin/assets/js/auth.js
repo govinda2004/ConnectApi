@@ -23,7 +23,24 @@
     const res = await window.API.post("/api/admin/login", credentials, false);
     const token = res?.token || res?.data?.token;
     const admin = res?.admin || res?.data?.admin || null;
-    if (!token) throw new Error("Token missing");
+    if (!token) {
+      console.error("Admin login: token missing in response", res);
+      const detail = res?.message || res?.data?.message || (typeof res === "string" ? res : JSON.stringify(res));
+      throw new Error(`Token missing. API response: ${detail || "empty response"}`);
+    }
+    setSession(token, admin);
+    return { token, admin };
+  }
+
+  async function bootstrapSuperAdmin(payload) {
+    const res = await window.API.post("/api/admin/bootstrap", payload, false);
+    const token = res?.token || res?.data?.token;
+    const admin = res?.admin || res?.data?.admin || null;
+    if (!token) {
+      console.error("Admin bootstrap: token missing in response", res);
+      const detail = res?.message || res?.data?.message || (typeof res === "string" ? res : JSON.stringify(res));
+      throw new Error(`Token missing. API response: ${detail || "empty response"}`);
+    }
     setSession(token, admin);
     return { token, admin };
   }
@@ -42,5 +59,5 @@
   }
 
   window.addEventListener("admin:unauthorized", logout);
-  window.Auth = { getToken, isAuthenticated, getAdmin, login, logout, requireAuth };
+  window.Auth = { getToken, isAuthenticated, getAdmin, login, bootstrapSuperAdmin, logout, requireAuth };
 })();

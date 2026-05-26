@@ -1,7 +1,7 @@
 FROM php:8.2-cli
 
-# Install MySQL PDO extension
-RUN docker-php-ext-install pdo pdo_mysql
+# Install PDO extensions for MySQL + PostgreSQL
+RUN docker-php-ext-install pdo pdo_mysql pdo_pgsql
 
 # Increase PHP upload limits for video support
 RUN echo "upload_max_filesize=50M" >> /usr/local/etc/php/php.ini-development && \

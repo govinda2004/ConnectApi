@@ -6,6 +6,12 @@
 
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
+// Friendly redirects for admin panel directory routes
+if ($uri === '/admin' || $uri === '/admin/') {
+    header('Location: /admin/index.html', true, 302);
+    exit;
+}
+
 // If the file exists, serve it directly (for static files)
 if ($uri !== '/' && file_exists(__DIR__ . $uri)) {
     return false;
