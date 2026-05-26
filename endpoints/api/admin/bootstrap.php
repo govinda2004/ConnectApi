@@ -8,6 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $setupKey = trim((string)(getenv('SUPER_ADMIN_SETUP_KEY') ?: ''));
 
+
 if ($setupKey === '') {
     jsonError('Super admin setup is disabled. Set SUPER_ADMIN_SETUP_KEY env var first.', 403);
 }
@@ -72,6 +73,7 @@ jsonAuth($token, [
     'id' => $userId,
     'name' => $name,
     'email' => $email,
+
 jsonSuccess([
     'token' => $token,
     'admin' => [

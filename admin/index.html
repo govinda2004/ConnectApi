@@ -14,6 +14,7 @@
         <h1 class="h4">Super Admin Login</h1>
         <p class="text-body-secondary">Sign in to continue.</p>
         <div id="loginAlert" class="alert d-none"></div>
+        <div id="dbCheck" class="alert d-none"></div>
         <form id="loginForm">
           <div class="mb-3"><label class="form-label">Email</label><input id="email" type="email" class="form-control" required></div>
           <div class="mb-3"><label class="form-label">Password</label><input id="password" type="password" class="form-control" required></div>
@@ -24,12 +25,14 @@
           <summary class="fw-semibold">Create Super Admin (first-time setup)</summary>
           <p class="text-body-secondary mt-2 mb-2 small">Setup key is optional right now. If <code>SUPER_ADMIN_SETUP_KEY</code> is configured in server env, it will be required.</p>
 
+
           <p class="text-body-secondary mt-2 mb-2 small">Requires <code>SUPER_ADMIN_SETUP_KEY</code> in server env.</p>
           <form id="bootstrapForm">
             <div class="mb-2"><label class="form-label">Name</label><input id="bootstrapName" type="text" class="form-control" placeholder="Super Admin"></div>
             <div class="mb-2"><label class="form-label">Email</label><input id="bootstrapEmail" type="email" class="form-control" required></div>
             <div class="mb-2"><label class="form-label">Password</label><input id="bootstrapPassword" type="password" class="form-control" minlength="6" required></div>
             <div class="mb-3"><label class="form-label">Setup Key (optional for first admin)</label><input id="bootstrapKey" type="password" class="form-control"></div>
+
             <div class="mb-3"><label class="form-label">Setup Key</label><input id="bootstrapKey" type="password" class="form-control" required></div>
             <button class="btn btn-outline-primary w-100" type="submit">Create / Reset Super Admin</button>
           </form>
@@ -46,6 +49,24 @@
       const form = document.getElementById('loginForm');
       const bootstrapForm = document.getElementById('bootstrapForm');
       const alertBox = document.getElementById('loginAlert');
+      const dbCheckBox = document.getElementById('dbCheck');
+
+      (async () => {
+        try {
+          const res = await window.API.get('/api/admin/db-check', {}, false);
+          const data = res?.data || res;
+          dbCheckBox.className = data.connected ? 'alert alert-success' : 'alert alert-danger';
+          dbCheckBox.innerHTML = `
+            <strong>DB Check:</strong> ${data.connected ? 'Connected' : 'Failed'}<br>
+            Driver: ${data.driver || '-'} | Host: ${data.host || '-'} | Port: ${data.port || '-'}<br>
+            Database: ${data.database || '-'} | User: ${data.user || '-'}<br>
+            ${data.error ? `Error: ${data.error}` : ''}
+          `;
+        } catch (err) {
+          dbCheckBox.className = 'alert alert-danger';
+          dbCheckBox.textContent = err.message || 'Database check failed';
+        }
+      })();
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         try {

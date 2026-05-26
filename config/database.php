@@ -8,6 +8,12 @@ function getDB(): PDO {
     static $pdo = null;
     if ($pdo !== null) return $pdo;
 
+    $host = getenv('DB_HOST') ?: 'localhost';
+    $port = getenv('DB_PORT') ?: '3306';
+    $name = getenv('DB_NAME') ?: 'connectin';
+    $user = getenv('DB_USER') ?: 'root';
+    $pass = getenv('DB_PASS') ?: '';
+    $driver = strtolower((string)(getenv('DB_DRIVER') ?: 'mysql'));
     // Database Credentials from InfinityFree Dashboard
     $host = 'sql205.infinityfree.com';
     $port = '3306';
@@ -22,7 +28,37 @@ function getDB(): PDO {
     $user = getenv('DB_USER') ?: $user;
     $pass = getenv('DB_PASS') ?: $pass;
 
-    $dsn = "mysql:host=$host;port=$port;dbname=$name;charset=utf8mb4";
+    // Support common Render-style single connection string as fallback.
+    $databaseUrl = getenv('DATABASE_URL') ?: getenv('MYSQL_URL') ?: '';
+    if ($databaseUrl && (getenv('DB_HOST') === false || getenv('DB_NAME') === false || getenv('DB_USER') === false)) {
+        $parts = parse_url($databaseUrl);
+        if (is_array($parts)) {
+            $scheme = strtolower($parts['scheme'] ?? '');
+            if (in_array($scheme, ['mysql', 'mariadb'], true)) {
+                $driver = 'mysql';
+                $host = $parts['host'] ?? $host;
+                $port = isset($parts['port']) ? (string)$parts['port'] : $port;
+                $path = $parts['path'] ?? '';
+                $name = ltrim($path, '/') ?: $name;
+                $user = $parts['user'] ?? $user;
+                $pass = $parts['pass'] ?? $pass;
+            } elseif (in_array($scheme, ['postgres', 'postgresql'], true)) {
+                $driver = 'pgsql';
+                $host = $parts['host'] ?? $host;
+                $port = isset($parts['port']) ? (string)$parts['port'] : '5432';
+                $path = $parts['path'] ?? '';
+                $name = ltrim($path, '/') ?: $name;
+                $user = $parts['user'] ?? $user;
+                $pass = $parts['pass'] ?? $pass;
+            }
+        }
+    }
+
+    if ($driver === 'pgsql') {
+        $dsn = "pgsql:host=$host;port=$port;dbname=$name";
+    } else {
+        $dsn = "mysql:host=$host;port=$port;dbname=$name;charset=utf8mb4";
+    }
 
     $options = [
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
@@ -32,7 +68,7 @@ function getDB(): PDO {
 
     // SSL options (not usually required for InfinityFree)
     $sslCert = getenv('DB_SSL_CA');
-    if ($sslCert) {
+    if ($sslCert && $driver === 'mysql') {
         $options[PDO::MYSQL_ATTR_SSL_CA] = $sslCert;
         $options[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;
     }
