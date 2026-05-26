@@ -22,7 +22,7 @@ try {
 // Get current config values (matching config/database.php logic)
 $host = getenv('DB_HOST') ?: 'gateway01.ap-southeast-1.prod.aws.tidbcloud.com';
 $port = getenv('DB_PORT') ?: '4000';
-$name = getenv('DB_NAME') ?: 'sys';
+$name = getenv('DB_NAME') ?: 'test'; // Changed from 'sys' to 'test'
 $user = getenv('DB_USER') ?: '2oU8khtXMM7Ygx9.root';
 
 jsonSuccess([
