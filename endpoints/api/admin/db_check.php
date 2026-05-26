@@ -5,32 +5,38 @@ require_once __DIR__ . '/../../../helpers/response.php';
 
 $connected = false;
 $error = null;
-$details = [];
+$ssl_active = false;
 
 try {
-    // Attempt to get the DB instance
     $db = getDB();
-    $db->query('SELECT 1');
+    // Test the connection
+    $stmt = $db->query("SHOW STATUS LIKE 'Ssl_cipher'");
+    $ssl_info = $stmt->fetch();
+    $ssl_active = !empty($ssl_info['Value']);
+
     $connected = true;
 } catch (Throwable $e) {
     $error = $e->getMessage();
 }
 
-// We pull these again to show what's currently being used in the config
-// Note: In a real production app, you might want to hide sensitive info,
-// but for debugging connection issues, this is helpful.
-$host = getenv('DB_HOST') ?: 'junction.proxy.rlwy.net';
-$port = getenv('DB_PORT') ?: '19383';
-$name = getenv('DB_NAME') ?: 'connectin';
-$user = getenv('DB_USER') ?: 'root';
+// Get current config values (matching config/database.php logic)
+$host = getenv('DB_HOST') ?: 'gateway01.ap-southeast-1.prod.aws.tidbcloud.com';
+$port = getenv('DB_PORT') ?: '4000';
+$name = getenv('DB_NAME') ?: 'sys';
+$user = getenv('DB_USER') ?: '2oU8khtXMM7Ygx9.root';
 
 jsonSuccess([
     'connected' => $connected,
-    'driver' => 'mysql',
+    'driver' => 'mysql (TiDB)',
     'host' => $host,
     'port' => $port,
     'database' => $name,
     'user' => $user,
+    'ssl_active' => $ssl_active,
     'error' => $error,
-    'tip' => 'If Host is sqlXXX.infinityfree.com, it will FAIL on Render because InfinityFree blocks remote access.'
-], $connected ? 'Database connected successfully' : 'Database connection failed', $connected ? 200 : 200); // 200 so UI can show the error details
+    'environment' => [
+        'php_version' => PHP_VERSION,
+        'has_openssl' => extension_loaded('openssl'),
+        'pdo_drivers' => PDO::getAvailableDrivers()
+    ]
+], $connected ? 'Database connected successfully via TiDB Cloud' : 'Database connection failed', 200);
