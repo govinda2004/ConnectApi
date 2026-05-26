@@ -41,6 +41,7 @@
       const detail = res?.message || res?.data?.message || (typeof res === "string" ? res : JSON.stringify(res));
       throw new Error(`Token missing. API response: ${detail || "empty response"}`);
     }
+
     setSession(token, admin);
     return { token, admin };
   }

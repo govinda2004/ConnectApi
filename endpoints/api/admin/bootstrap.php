@@ -68,6 +68,10 @@ try {
 
 $token = createToken($userId, 'SuperAdminWeb');
 
+jsonAuth($token, [
+    'id' => $userId,
+    'name' => $name,
+    'email' => $email,
 jsonSuccess([
     'token' => $token,
     'admin' => [
