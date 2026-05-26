@@ -6,31 +6,32 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonError('Method not allowed', 405);
 }
 
-$input = json_decode(file_get_contents('php://input'), true);
-$email = trim((string)($input['email'] ?? $_POST['email'] ?? ''));
+$input = json_decode(file_get_contents('php://input'), true) ?: [];
+$email = strtolower(trim((string)($input['email'] ?? $_POST['email'] ?? '')));
 $password = (string)($input['password'] ?? $_POST['password'] ?? '');
 
 if ($email === '' || $password === '') {
-    jsonError('email and password are required');
+    jsonError('Email and password are required');
+}
+
+if (!isSuperAdminEmail($email)) {
+    jsonError('Forbidden: not a super admin', 403);
 }
 
 $db = getDB();
-$stmt = $db->prepare('SELECT id, name, email, password FROM users WHERE email = ? LIMIT 1');
+$stmt = $db->prepare('SELECT id, name, password FROM users WHERE email = ? LIMIT 1');
 $stmt->execute([$email]);
 $user = $stmt->fetch();
 
-if (!$user || !password_verify($password, (string)$user['password'])) {
-    jsonError('Invalid email or password', 401);
+if (!$user || !password_verify($password, $user['password'])) {
+    jsonError('Invalid email or password');
 }
 
-if (!isSuperAdminEmail((string)$user['email'])) {
-    jsonError('Forbidden: super admin access required', 403);
-}
-
-$token = createToken((int)$user['id'], 'SuperAdminWeb');
+$userId = (int)$user['id'];
+$token = createToken($userId, 'SuperAdminWeb');
 
 jsonAuth($token, [
-    'id' => (int)$user['id'],
+    'id' => $userId,
     'name' => $user['name'],
-    'email' => $user['email'],
-], 'Admin login successful');
+    'email' => $email,
+], 'Login successful');

@@ -19,41 +19,28 @@
     localStorage.removeItem(ADMIN_KEY);
   }
 
+  async function handleAuthResponse(res, context) {
+    const token = res?.token || res?.data?.token;
+    const admin = res?.user || res?.admin || res?.data?.user || res?.data?.admin || null;
+
+    if (!token) {
+      console.error(`${context}: token missing in response`, res);
+      const detail = res?.message || res?.data?.message || (typeof res === "string" ? res : JSON.stringify(res));
+      throw new Error(`Token missing. API response: ${detail || "empty response"}`);
+    }
+
+    setSession(token, admin);
+    return { token, admin };
+  }
+
   async function login(credentials) {
     const res = await window.API.post("/api/admin/login", credentials, false);
-    const token = res?.token || res?.data?.token;
-    const admin = res?.admin || res?.data?.admin || null;
-    if (!token) {
-      console.error("Admin login: token missing in response", res);
-      const detail = res?.message || res?.data?.message || (typeof res === "string" ? res : JSON.stringify(res));
-      throw new Error(`Token missing. API response: ${detail || "empty response"}`);
-    }
-    setSession(token, admin);
-    return { token, admin };
+    return handleAuthResponse(res, "Admin login");
   }
 
   async function bootstrapSuperAdmin(payload) {
     const res = await window.API.post("/api/admin/bootstrap", payload, false);
-    const token = res?.token || res?.data?.token;
-    const admin = res?.admin || res?.data?.admin || null;
-    if (!token) {
-      console.error("Admin bootstrap: token missing in response", res);
-      const detail = res?.message || res?.data?.message || (typeof res === "string" ? res : JSON.stringify(res));
-      throw new Error(`Token missing. API response: ${detail || "empty response"}`);
-    }
-
-
-    setSession(token, admin);
-    return { token, admin };
-  }
-
-  async function bootstrapSuperAdmin(payload) {
-    const res = await window.API.post("/api/admin/bootstrap", payload, false);
-    const token = res?.token || res?.data?.token;
-    const admin = res?.admin || res?.data?.admin || null;
-    if (!token) throw new Error("Token missing");
-    setSession(token, admin);
-    return { token, admin };
+    return handleAuthResponse(res, "Admin bootstrap");
   }
 
   function logout() {

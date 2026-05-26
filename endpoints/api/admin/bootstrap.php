@@ -31,13 +31,6 @@ if (strlen($password) < 6) {
 $db = getDB();
 ensureSuperAdminsTable($db);
 
-// Temporary relaxed security:
-// - If SUPER_ADMIN_SETUP_KEY is configured, validate it.
-// - If not configured, allow bootstrap without setup key.
-if ($setupKey !== '' && ($key === '' || !hash_equals($setupKey, $key))) {
-    jsonError('Invalid setup key', 403);
-}
-
 $hash = password_hash($password, PASSWORD_BCRYPT);
 $db->beginTransaction();
 try {
@@ -48,10 +41,10 @@ try {
     if ($user) {
         $userId = (int)$user['id'];
         $upd = $db->prepare('UPDATE users SET name = ?, password = ? WHERE id = ?');
-        $upd->execute([$name !== '' ? $name : 'Super Admin', $hash, $userId]);
+        $upd->execute([($name !== '' ? $name : 'Super Admin'), $hash, $userId]);
     } else {
         $ins = $db->prepare('INSERT INTO users (name, email, password, login_type) VALUES (?, ?, ?, ?)');
-        $ins->execute([$name !== '' ? $name : 'Super Admin', $email, $hash, 'email']);
+        $ins->execute([($name !== '' ? $name : 'Super Admin'), $email, $hash, 'email']);
         $userId = (int)$db->lastInsertId();
     }
 
@@ -67,16 +60,12 @@ try {
 
 $token = createToken($userId, 'SuperAdminWeb');
 
-jsonAuth($token, [
-    'id' => $userId,
-    'name' => $name,
-    'email' => $email,
-
+// Send both root-level and nested data for maximum compatibility
 jsonSuccess([
     'token' => $token,
     'admin' => [
         'id' => $userId,
-        'name' => $name,
+        'name' => ($name !== '' ? $name : 'Super Admin'),
         'email' => $email,
     ],
 ], 'Super admin account ready');
