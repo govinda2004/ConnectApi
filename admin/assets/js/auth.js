@@ -42,6 +42,7 @@
       throw new Error(`Token missing. API response: ${detail || "empty response"}`);
     }
 
+
     setSession(token, admin);
     return { token, admin };
   }

@@ -14,6 +14,7 @@ function getDB(): PDO {
     $user = getenv('DB_USER') ?: 'root';
     $pass = getenv('DB_PASS') ?: '';
     $driver = strtolower((string)(getenv('DB_DRIVER') ?: 'mysql'));
+
     // Database Credentials from InfinityFree Dashboard
     $host = 'sql205.infinityfree.com';
     $port = '3306';
