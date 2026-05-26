@@ -24,25 +24,11 @@ if (strlen($password) < 6) {
 $db = getDB();
 ensureSuperAdminsTable($db);
 
-// Security rule:
-// - If SUPER_ADMIN_SETUP_KEY is configured, always require it.
-// - If not configured, allow bootstrap only when there are zero active super admins (first-time setup).
-$activeAdmins = 0;
-try {
-    $c = $db->query('SELECT COUNT(*) FROM super_admins WHERE is_active = 1');
-    $activeAdmins = (int)$c->fetchColumn();
-} catch (Throwable $e) {
-    $activeAdmins = 0;
-}
-
-if ($setupKey !== '') {
-    if ($key === '' || !hash_equals($setupKey, $key)) {
-        jsonError('Invalid setup key', 403);
-    }
-} else {
-    if ($activeAdmins > 0) {
-        jsonError('Super admin setup is locked. Set SUPER_ADMIN_SETUP_KEY env var to reset/create additional admins.', 403);
-    }
+// Temporary relaxed security:
+// - If SUPER_ADMIN_SETUP_KEY is configured, validate it.
+// - If not configured, allow bootstrap without setup key.
+if ($setupKey !== '' && ($key === '' || !hash_equals($setupKey, $key))) {
+    jsonError('Invalid setup key', 403);
 }
 
 $hash = password_hash($password, PASSWORD_BCRYPT);
