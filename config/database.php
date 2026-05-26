@@ -1,9 +1,7 @@
 <?php
 /**
- * PlanetScale MySQL Database Connection (PDO + SSL)
- *
- * Set these environment variables on Render:
- *   DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS
+ * MySQL Database Connection
+ * Configuration for InfinityFree Hosting
  */
 
 function getDB(): PDO {
@@ -16,6 +14,19 @@ function getDB(): PDO {
     $user = getenv('DB_USER') ?: 'root';
     $pass = getenv('DB_PASS') ?: '';
     $driver = strtolower((string)(getenv('DB_DRIVER') ?: 'mysql'));
+    // Database Credentials from InfinityFree Dashboard
+    $host = 'sql205.infinityfree.com';
+    $port = '3306';
+    $name = 'if0_42023594_connectin';
+    $user = 'if0_42023594';
+    $pass = 'HknPk5y8A324';
+
+    // Override with environment variables if present (optional)
+    $host = getenv('DB_HOST') ?: $host;
+    $port = getenv('DB_PORT') ?: $port;
+    $name = getenv('DB_NAME') ?: $name;
+    $user = getenv('DB_USER') ?: $user;
+    $pass = getenv('DB_PASS') ?: $pass;
 
     // Support common Render-style single connection string as fallback.
     $databaseUrl = getenv('DATABASE_URL') ?: getenv('MYSQL_URL') ?: '';
@@ -55,19 +66,21 @@ function getDB(): PDO {
         PDO::ATTR_EMULATE_PREPARES   => false,
     ];
 
-    // PlanetScale requires SSL
+    // SSL options (not usually required for InfinityFree)
     $sslCert = getenv('DB_SSL_CA');
     if ($sslCert && $driver === 'mysql') {
         $options[PDO::MYSQL_ATTR_SSL_CA] = $sslCert;
         $options[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;
     }
 
-    $pdo = new PDO($dsn, $user, $pass, $options);
-    // Keep DB session in UTC so all CURRENT_TIMESTAMP values are consistent.
     try {
+        $pdo = new PDO($dsn, $user, $pass, $options);
+        // Keep DB session in UTC
         $pdo->exec("SET time_zone = '+00:00'");
-    } catch (Throwable $e) {
-        // Best effort only; do not block API if this fails.
+    } catch (PDOException $e) {
+        // Handle connection error
+        die("Database Connection Failed: " . $e->getMessage());
     }
+
     return $pdo;
 }
