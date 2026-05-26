@@ -41,6 +41,17 @@
       const detail = res?.message || res?.data?.message || (typeof res === "string" ? res : JSON.stringify(res));
       throw new Error(`Token missing. API response: ${detail || "empty response"}`);
     }
+
+
+    setSession(token, admin);
+    return { token, admin };
+  }
+
+  async function bootstrapSuperAdmin(payload) {
+    const res = await window.API.post("/api/admin/bootstrap", payload, false);
+    const token = res?.token || res?.data?.token;
+    const admin = res?.admin || res?.data?.admin || null;
+    if (!token) throw new Error("Token missing");
     setSession(token, admin);
     return { token, admin };
   }

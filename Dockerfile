@@ -3,6 +3,7 @@ FROM php:8.2-cli
 # Install system deps needed to compile PDO PostgreSQL extension
 RUN apt-get update && apt-get install -y --no-install-recommends libpq-dev && rm -rf /var/lib/apt/lists/*
 
+
 # Install PDO extensions for MySQL + PostgreSQL
 RUN docker-php-ext-install pdo pdo_mysql pdo_pgsql
 

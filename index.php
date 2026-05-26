@@ -216,6 +216,7 @@ $endpoints = [
     // Admin API (static routes)
     'api/admin/login'        => 'endpoints/api/admin/login.php',
     'api/admin/db-check'     => 'endpoints/api/admin/db_check.php',
+
     'api/admin/bootstrap'    => 'endpoints/api/admin/bootstrap.php',
     'api/admin/profile'      => 'endpoints/api/admin/profile.php',
     'api/admin/dashboard/stats' => 'endpoints/api/admin/dashboard/stats.php',
