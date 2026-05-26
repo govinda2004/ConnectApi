@@ -30,6 +30,13 @@ if (strlen($password) < 6) {
 $db = getDB();
 ensureSuperAdminsTable($db);
 
+// Temporary relaxed security:
+// - If SUPER_ADMIN_SETUP_KEY is configured, validate it.
+// - If not configured, allow bootstrap without setup key.
+if ($setupKey !== '' && ($key === '' || !hash_equals($setupKey, $key))) {
+    jsonError('Invalid setup key', 403);
+}
+
 $hash = password_hash($password, PASSWORD_BCRYPT);
 $db->beginTransaction();
 try {
