@@ -29,11 +29,8 @@ if (!isSuperAdminEmail((string)$user['email'])) {
 
 $token = createToken((int)$user['id'], 'SuperAdminWeb');
 
-jsonSuccess([
-    'token' => $token,
-    'admin' => [
-        'id' => (int)$user['id'],
-        'name' => $user['name'],
-        'email' => $user['email'],
-    ],
+jsonAuth($token, [
+    'id' => (int)$user['id'],
+    'name' => $user['name'],
+    'email' => $user['email'],
 ], 'Admin login successful');
