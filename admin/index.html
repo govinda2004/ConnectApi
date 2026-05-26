@@ -11,64 +11,96 @@
   <main class="min-vh-100 d-flex align-items-center justify-content-center p-3">
     <div class="card login-card shadow-sm border-0">
       <div class="card-body p-4">
-        <h1 class="h4">Super Admin Login</h1>
-        <p class="text-body-secondary">Sign in to continue.</p>
+        <h1 class="h4 text-center mb-4">Super Admin Login</h1>
+
         <div id="loginAlert" class="alert d-none"></div>
         <div id="dbCheck" class="alert d-none"></div>
+
         <form id="loginForm">
-          <div class="mb-3"><label class="form-label">Email</label><input id="email" type="email" class="form-control" required></div>
-          <div class="mb-3"><label class="form-label">Password</label><input id="password" type="password" class="form-control" required></div>
-          <button id="loginBtn" class="btn btn-primary w-100" type="submit">Login</button>
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input id="email" type="email" class="form-control" placeholder="admin@example.com" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input id="password" type="password" class="form-control" placeholder="••••••••" required>
+          </div>
+          <button id="loginBtn" class="btn btn-primary w-100 py-2" type="submit">Sign In</button>
         </form>
-        <hr>
-        <details>
-          <summary class="fw-semibold">Create Super Admin (first-time setup)</summary>
-          <p class="text-body-secondary mt-2 mb-2 small">Setup key is optional right now. If <code>SUPER_ADMIN_SETUP_KEY</code> is configured in server env, it will be required.</p>
 
-
-          <p class="text-body-secondary mt-2 mb-2 small">Requires <code>SUPER_ADMIN_SETUP_KEY</code> in server env.</p>
-          <form id="bootstrapForm">
-            <div class="mb-2"><label class="form-label">Name</label><input id="bootstrapName" type="text" class="form-control" placeholder="Super Admin"></div>
-            <div class="mb-2"><label class="form-label">Email</label><input id="bootstrapEmail" type="email" class="form-control" required></div>
-            <div class="mb-2"><label class="form-label">Password</label><input id="bootstrapPassword" type="password" class="form-control" minlength="6" required></div>
-            <div class="mb-3"><label class="form-label">Setup Key (optional for first admin)</label><input id="bootstrapKey" type="password" class="form-control"></div>
-
-            <div class="mb-3"><label class="form-label">Setup Key</label><input id="bootstrapKey" type="password" class="form-control" required></div>
-            <button class="btn btn-outline-primary w-100" type="submit">Create / Reset Super Admin</button>
-          </form>
-        </details>
+        <div id="setupContainer" class="d-none mt-4">
+          <hr>
+          <details>
+            <summary class="fw-semibold text-primary cursor-pointer">First-time Setup: Create Super Admin</summary>
+            <div class="mt-3">
+              <p class="text-muted small mb-3">Configure <code>SUPER_ADMIN_SETUP_KEY</code> in Render environment variables to use this feature.</p>
+              <form id="bootstrapForm">
+                <div class="mb-2">
+                  <label class="form-label small">Full Name</label>
+                  <input id="bootstrapName" type="text" class="form-control form-control-sm" placeholder="Super Admin">
+                </div>
+                <div class="mb-2">
+                  <label class="form-label small">Email Address</label>
+                  <input id="bootstrapEmail" type="email" class="form-control form-control-sm" required>
+                </div>
+                <div class="mb-2">
+                  <label class="form-label small">New Password</label>
+                  <input id="bootstrapPassword" type="password" class="form-control form-control-sm" minlength="6" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label small">Setup Key</label>
+                  <input id="bootstrapKey" type="password" class="form-control form-control-sm" required>
+                </div>
+                <button class="btn btn-outline-primary btn-sm w-100" type="submit">Create Super Admin</button>
+              </form>
+            </div>
+          </details>
+        </div>
       </div>
     </div>
   </main>
+
   <script src="/admin/assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
   <script src="/admin/assets/js/api.js"></script>
   <script src="/admin/assets/js/auth.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       if (window.Auth.isAuthenticated()) location.href = 'dashboard.html';
-      const form = document.getElementById('loginForm');
+
+      const loginForm = document.getElementById('loginForm');
       const bootstrapForm = document.getElementById('bootstrapForm');
       const alertBox = document.getElementById('loginAlert');
       const dbCheckBox = document.getElementById('dbCheck');
+      const setupContainer = document.getElementById('setupContainer');
 
+      // Check Database and Admin Status
       (async () => {
         try {
           const res = await window.API.get('/api/admin/db-check', {}, false);
           const data = res?.data || res;
-          dbCheckBox.className = data.connected ? 'alert alert-success' : 'alert alert-danger';
-          dbCheckBox.innerHTML = `
-            <strong>DB Check:</strong> ${data.connected ? 'Connected' : 'Failed'}<br>
-            Driver: ${data.driver || '-'} | Host: ${data.host || '-'} | Port: ${data.port || '-'}<br>
-            Database: ${data.database || '-'} | User: ${data.user || '-'}<br>
-            ${data.error ? `Error: ${data.error}` : ''}
-          `;
+
+          if (!data.connected) {
+            dbCheckBox.className = 'alert alert-danger d-block';
+            dbCheckBox.innerHTML = `<strong>DB Error:</strong> Database connection failed.`;
+          } else {
+            // Only show setup if no admin exists
+            if (!data.has_admin) {
+              setupContainer.classList.remove('d-none');
+            }
+          }
         } catch (err) {
-          dbCheckBox.className = 'alert alert-danger';
-          dbCheckBox.textContent = err.message || 'Database check failed';
+          dbCheckBox.className = 'alert alert-danger d-block';
+          dbCheckBox.textContent = 'Unable to verify database status.';
         }
       })();
-      form.addEventListener('submit', async (e) => {
+
+      // Login Handler
+      loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const btn = document.getElementById('loginBtn');
+        btn.disabled = true;
+        btn.textContent = 'Signing in...';
+
         try {
           await window.Auth.login({
             email: document.getElementById('email').value.trim(),
@@ -76,11 +108,14 @@
           });
           location.href = 'dashboard.html';
         } catch (err) {
-          alertBox.className = 'alert alert-danger';
+          alertBox.className = 'alert alert-danger d-block';
           alertBox.textContent = err.message || 'Login failed';
+          btn.disabled = false;
+          btn.textContent = 'Sign In';
         }
       });
 
+      // Bootstrap Handler
       bootstrapForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
         try {
@@ -92,8 +127,8 @@
           });
           location.href = 'dashboard.html';
         } catch (err) {
-          alertBox.className = 'alert alert-danger';
-          alertBox.textContent = err.message || 'Super admin setup failed';
+          alertBox.className = 'alert alert-danger d-block';
+          alertBox.textContent = err.message || 'Setup failed';
         }
       });
     });

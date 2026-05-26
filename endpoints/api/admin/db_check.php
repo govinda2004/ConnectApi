@@ -2,41 +2,28 @@
 
 require_once __DIR__ . '/../../../config/database.php';
 require_once __DIR__ . '/../../../helpers/response.php';
+require_once __DIR__ . '/_common.php';
 
 $connected = false;
 $error = null;
-$ssl_active = false;
+$hasAdmin = false;
 
 try {
     $db = getDB();
-    // Test the connection
-    $stmt = $db->query("SHOW STATUS LIKE 'Ssl_cipher'");
-    $ssl_info = $stmt->fetch();
-    $ssl_active = !empty($ssl_info['Value']);
-
+    $db->query('SELECT 1');
     $connected = true;
+
+    // Check if any super admin exists
+    ensureSuperAdminsTable($db);
+    $stmt = $db->query('SELECT COUNT(*) FROM super_admins WHERE is_active = 1');
+    $hasAdmin = ((int)$stmt->fetchColumn()) > 0;
 } catch (Throwable $e) {
     $error = $e->getMessage();
 }
 
-// Get current config values (matching config/database.php logic)
-$host = getenv('DB_HOST') ?: 'gateway01.ap-southeast-1.prod.aws.tidbcloud.com';
-$port = getenv('DB_PORT') ?: '4000';
-$name = getenv('DB_NAME') ?: 'test'; // Changed from 'sys' to 'test'
-$user = getenv('DB_USER') ?: '2oU8khtXMM7Ygx9.root';
-
+// Minimal data for the login page to ensure security
 jsonSuccess([
     'connected' => $connected,
-    'driver' => 'mysql (TiDB)',
-    'host' => $host,
-    'port' => $port,
-    'database' => $name,
-    'user' => $user,
-    'ssl_active' => $ssl_active,
-    'error' => $error,
-    'environment' => [
-        'php_version' => PHP_VERSION,
-        'has_openssl' => extension_loaded('openssl'),
-        'pdo_drivers' => PDO::getAvailableDrivers()
-    ]
-], $connected ? 'Database connected successfully via TiDB Cloud' : 'Database connection failed', 200);
+    'has_admin' => $hasAdmin,
+    'error' => $connected ? null : $error
+], $connected ? 'Database connected' : 'Database connection failed');
