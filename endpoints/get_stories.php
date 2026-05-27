@@ -27,9 +27,13 @@ $friendIds = array_column($stmt->fetchAll(), 'friend_id');
 
 // Include self
 $allIds = array_merge([$userId], $friendIds);
+if (empty($allIds)) {
+    jsonSuccess([], 'No stories found');
+}
+
 $placeholders = implode(',', array_fill(0, count($allIds), '?'));
 
-// Get all active stories from self + connections
+// Get all active stories from self + connections (excluding admins)
 $stmt = $db->prepare("
     SELECT s.*, u.name AS user_name, pr.profile_image AS user_image
     FROM stories s
@@ -37,6 +41,7 @@ $stmt = $db->prepare("
     LEFT JOIN profiles pr ON s.user_id = pr.user_id
     WHERE s.user_id IN ($placeholders)
     AND s.expires_at > NOW()
+    AND u.email NOT IN (SELECT email FROM super_admins)
     ORDER BY s.created_at DESC
 ");
 $stmt->execute($allIds);

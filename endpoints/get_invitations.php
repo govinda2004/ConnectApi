@@ -44,7 +44,7 @@ $stmt = $db->prepare('
 $stmt->execute([$userId, 'pending']);
 $sent = $stmt->fetchAll();
 
-// Suggested connections (users not yet connected)
+// Suggested connections (users not yet connected, excluding admins)
 $stmt = $db->prepare('
     SELECT u.id AS user_id, u.name, u.email, u.account_type,
            pr.profile_image AS image, pr.headline AS role, pr.location, pr.about AS bio
@@ -56,6 +56,7 @@ $stmt = $db->prepare('
           UNION
           SELECT sender_id FROM connections WHERE receiver_id = ?
       )
+      AND u.email NOT IN (SELECT email FROM super_admins)
     ORDER BY RAND()
     LIMIT 20
 ');

@@ -25,6 +25,7 @@ $stmt = $db->prepare(
      LEFT JOIN profiles p ON p.user_id = u.id
      WHERE we.org_user_id = ?
        AND (we.end_date IS NULL OR TRIM(we.end_date) = "")
+       AND u.email NOT IN (SELECT email FROM super_admins)
      ORDER BY we.id DESC'
 );
 $stmt->execute([$orgUserId]);

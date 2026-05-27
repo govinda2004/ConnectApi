@@ -23,14 +23,15 @@ $db = getDB();
 $searchTerm = '%' . $query . '%';
 $results = ['people' => [], 'posts' => []];
 
-// Search people
+// Search people (excluding admins)
 if ($type === 'all' || $type === 'people') {
     $stmt = $db->prepare('
         SELECT u.id AS user_id, u.name, u.email,
                p.profile_image, p.headline, p.location
         FROM users u
         LEFT JOIN profiles p ON u.id = p.user_id
-        WHERE u.name LIKE ? OR u.email LIKE ? OR p.headline LIKE ?
+        WHERE (u.name LIKE ? OR u.email LIKE ? OR p.headline LIKE ?)
+          AND u.email NOT IN (SELECT email FROM super_admins)
         LIMIT 20
     ');
     $stmt->execute([$searchTerm, $searchTerm, $searchTerm]);
@@ -41,7 +42,7 @@ if ($type === 'all' || $type === 'people') {
     }
 }
 
-// Search posts
+// Search posts (excluding posts by admins)
 if ($type === 'all' || $type === 'posts') {
     $stmt = $db->prepare('
         SELECT p.id, p.content, p.created_at,
@@ -50,6 +51,7 @@ if ($type === 'all' || $type === 'posts') {
         JOIN users u ON p.user_id = u.id
         LEFT JOIN profiles pr ON p.user_id = pr.user_id
         WHERE p.content LIKE ?
+          AND u.email NOT IN (SELECT email FROM super_admins)
         ORDER BY p.created_at DESC
         LIMIT 20
     ');

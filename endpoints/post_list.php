@@ -54,8 +54,8 @@ if ($currentUserId > 0) {
 }
 $blockedPlaceholders = !empty($blockedIds) ? implode(',', $blockedIds) : '0';
 
-// Build WHERE clause based on feed type
-$where = "WHERE p.user_id NOT IN ($blockedPlaceholders)";
+// Build WHERE clause based on feed type (and exclude admins)
+$where = "WHERE p.user_id NOT IN ($blockedPlaceholders) AND u.email NOT IN (SELECT email FROM super_admins)";
 $params = [];
 
 if ($cursor > 0 && $feedType !== 'trending') {
@@ -85,7 +85,7 @@ if ($feedType === 'trending') {
 }
 
 // Total count (for page-based pagination)
-$countSql = "SELECT COUNT(*) FROM posts p $where";
+$countSql = "SELECT COUNT(*) FROM posts p JOIN users u ON p.user_id = u.id $where";
 $stmt = $db->prepare($countSql);
 $stmt->execute($params);
 $total = (int)$stmt->fetchColumn();
@@ -105,11 +105,12 @@ $sql = "
     LIMIT ? OFFSET ?
 ";
 $stmt = $db->prepare($sql);
-foreach ($params as $k => $v) {
-    $stmt->bindValue($k + 1, $v);
+$i = 1;
+foreach ($params as $v) {
+    $stmt->bindValue($i++, $v);
 }
-$stmt->bindValue(count($params) + 1, (int)$perPage, PDO::PARAM_INT);
-$stmt->bindValue(count($params) + 2, (int)($cursor > 0 ? 0 : $offset), PDO::PARAM_INT);
+$stmt->bindValue($i++, (int)$perPage, PDO::PARAM_INT);
+$stmt->bindValue($i++, (int)($cursor > 0 ? 0 : $offset), PDO::PARAM_INT);
 $stmt->execute();
 $posts = $stmt->fetchAll();
 
