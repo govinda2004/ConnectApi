@@ -64,7 +64,14 @@ $sql = "SELECT j.*, u.name AS posted_by,
     WHERE $where ORDER BY j.created_at DESC LIMIT ? OFFSET ?";
 
 $stmt = $db->prepare($sql);
-$stmt->execute(array_merge([$userId], $params, [$limit, $offset]));
+$stmt->bindValue(1, $userId, PDO::PARAM_INT);
+$i = 2;
+foreach ($params as $p) {
+    $stmt->bindValue($i++, $p);
+}
+$stmt->bindValue($i++, (int)$limit, PDO::PARAM_INT);
+$stmt->bindValue($i++, (int)$offset, PDO::PARAM_INT);
+$stmt->execute();
 $jobs = $stmt->fetchAll();
 
 foreach ($jobs as &$job) {

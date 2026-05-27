@@ -37,7 +37,10 @@ $stmt = $db->prepare('
     ORDER BY n.created_at DESC
     LIMIT ? OFFSET ?
 ');
-$stmt->execute([$userId, $limit, $offset]);
+$stmt->bindValue(1, $userId, PDO::PARAM_INT);
+$stmt->bindValue(2, (int)$limit, PDO::PARAM_INT);
+$stmt->bindValue(3, (int)$offset, PDO::PARAM_INT);
+$stmt->execute();
 $notifications = $stmt->fetchAll();
 
 foreach ($notifications as &$n) {

@@ -49,7 +49,14 @@ $stmt = $db->prepare("
     ORDER BY created_at DESC
     LIMIT ? OFFSET ?
 ");
-$stmt->execute([$targetUserId, $targetUserId, $targetUserId, $targetUserId, $limit, $offset]);
+
+$stmt->bindValue(1, $targetUserId, PDO::PARAM_INT);
+$stmt->bindValue(2, $targetUserId, PDO::PARAM_INT);
+$stmt->bindValue(3, $targetUserId, PDO::PARAM_INT);
+$stmt->bindValue(4, $targetUserId, PDO::PARAM_INT);
+$stmt->bindValue(5, (int)$limit, PDO::PARAM_INT);
+$stmt->bindValue(6, (int)$offset, PDO::PARAM_INT);
+$stmt->execute();
 $activities = $stmt->fetchAll();
 
 foreach ($activities as &$a) {

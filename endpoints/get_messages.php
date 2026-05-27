@@ -36,10 +36,15 @@ if ($beforeId > 0) {
 }
 
 $sql .= ' ORDER BY m.id DESC LIMIT ?';
-$params[] = $limit;
 
 $stmt = $db->prepare($sql);
-$stmt->execute($params);
+$i = 1;
+foreach ($params as $p) {
+    $stmt->bindValue($i++, $p);
+}
+$stmt->bindValue($i++, (int)$limit, PDO::PARAM_INT);
+$stmt->execute();
+
 $messages = array_reverse($stmt->fetchAll()); // reverse so oldest first
 
 foreach ($messages as &$msg) {

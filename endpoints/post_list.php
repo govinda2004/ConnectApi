@@ -104,9 +104,13 @@ $sql = "
     $orderBy
     LIMIT ? OFFSET ?
 ";
-$allParams = array_merge($params, [$perPage, $cursor > 0 ? 0 : $offset]);
 $stmt = $db->prepare($sql);
-$stmt->execute($allParams);
+foreach ($params as $k => $v) {
+    $stmt->bindValue($k + 1, $v);
+}
+$stmt->bindValue(count($params) + 1, (int)$perPage, PDO::PARAM_INT);
+$stmt->bindValue(count($params) + 2, (int)($cursor > 0 ? 0 : $offset), PDO::PARAM_INT);
+$stmt->execute();
 $posts = $stmt->fetchAll();
 
 // Check saved_posts and post_shares tables exist
