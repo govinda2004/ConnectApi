@@ -29,15 +29,24 @@ function createToken(int $userId, string $deviceName = 'Flutter'): string {
  * Returns user_id on success, calls jsonError on failure.
  */
 function requireAuth(): int {
-    $header = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-    if (empty($header) || !str_starts_with($header, 'Bearer ')) {
-        jsonError('Unauthorized', 401);
+    // Attempt to get the Authorization header from various sources (Render/Apache fix)
+    $header = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+
+    if (empty($header) && function_exists('apache_request_headers')) {
+        $headers = apache_request_headers();
+        $header = $headers['Authorization'] ?? $headers['authorization'] ?? '';
     }
+
+    if (empty($header) || !str_starts_with($header, 'Bearer ')) {
+        jsonError('Unauthorized: Missing or invalid Authorization header', 401);
+    }
+
     $token = substr($header, 7);
     $db = getDB();
     $stmt = $db->prepare('SELECT user_id FROM auth_tokens WHERE token = ?');
     $stmt->execute([$token]);
     $row = $stmt->fetch();
+
     if (!$row) {
         jsonError('Invalid or expired token', 401);
     }
@@ -48,7 +57,7 @@ function requireAuth(): int {
  * Get token string from Authorization header (without verifying).
  */
 function getBearerToken(): ?string {
-    $header = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+    $header = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
     if (empty($header) || !str_starts_with($header, 'Bearer ')) {
         return null;
     }
